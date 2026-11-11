@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T20:56:18.479Z",
+  "generatedAt": "2026-11-11T23:26:17.120Z",
   "files": [
     {
       "file": "index.html",
@@ -8,8 +8,8 @@
     },
     {
       "file": "admin.html",
-      "bytes": 4303,
-      "sha256": "bc163c64133cf7fb7bc8217556df6383fc2bd617c2961e1bb0651e077ca86eea"
+      "bytes": 8285,
+      "sha256": "3eb2f897074e63b0061a1f2cb88c86b392aaaf60cb5cc8bdd5e8c1fc5dc01f22"
     },
     {
       "file": "style.css",
@@ -23,8 +23,13 @@
     },
     {
       "file": "admin.mjs",
-      "bytes": 10128,
-      "sha256": "2ee27aafbdad6c89177fe4a8b8cd68cde198c7092d7aa78611ef97400678d71a"
+      "bytes": 18201,
+      "sha256": "19f46b5aa30fe33bec5635ded3b04f721f7e12b2b90da174ce06c3f4d6fbc486"
+    },
+    {
+      "file": "admin-acesso.mjs",
+      "bytes": 6019,
+      "sha256": "cef442b5671063ecab33ee65db1559f81a998dd50aadcdd471ff4513f9946327"
     },
     {
       "file": "domain.mjs",
@@ -58,33 +63,33 @@
     },
     {
       "file": "v2/index.html",
-      "bytes": 12754,
-      "sha256": "50100472877f2d74a1b6ebeeda88c3360aa87cda21b9c2c4999ba124aefd5b85"
+      "bytes": 14750,
+      "sha256": "49501ec663df57de5f07d6c0ad1bb26f7e3327dc76ea884e3931d22f8071035c"
     },
     {
       "file": "v2/theme.css",
-      "bytes": 25363,
-      "sha256": "2f67bfbc331412321fb31d6c67692a90efb23620b9c0efbec20e6037f55c94b1"
+      "bytes": 31297,
+      "sha256": "eac1c4283a92ac079decbbda0ad0bf2d2c08e30eede7f15d7f916c819d487c6a"
     },
     {
       "file": "v2/app.mjs",
-      "bytes": 9421,
-      "sha256": "dccc36403c0d0d215a0052efbe737cfd16332e536708728b53200ef1ba0053aa"
+      "bytes": 15801,
+      "sha256": "20ac7fa6a8b1a2d4e471ea25bc3f4cedd51817c972dc4820350356bf31a82f97"
     },
     {
       "file": "v2/book-controller.mjs",
-      "bytes": 16749,
-      "sha256": "a57f4e6c3b9e5268409d90e1e42f651b7e962f1c1740b71e220e551a64d2c527"
+      "bytes": 18116,
+      "sha256": "7f570437190846d9dbed5c4beafac7199b93f455bca21fb3db32b276a77163ff"
     },
     {
       "file": "v2/motion-controller.mjs",
-      "bytes": 1898,
-      "sha256": "1a552475b0b44f77f59fdbc81608aeeec6b17f2c4bdd31bdcf8775b8675e4950"
+      "bytes": 1974,
+      "sha256": "c773f91dd6016b5949d08f6bdb2318b965383e7d56223bef81e09303e8c201f5"
     },
     {
       "file": "v2/audio-controller.mjs",
-      "bytes": 5831,
-      "sha256": "d298321d3f6a9242f42515403ce368a83c873f693d20b5e07e24a23e14a93534"
+      "bytes": 7235,
+      "sha256": "58027b91c1ce8af5a1bf0a793b9effd000f41a5cc7dd92d9d0c06c1ba68d2b5a"
     },
     {
       "file": "v2/rsvp-controller.mjs",
@@ -98,8 +103,28 @@
     },
     {
       "file": "v2/config.mjs",
-      "bytes": 781,
-      "sha256": "bc5b3616c86a25367301105bcc4e3512ee38f99c0cf36819d9c37724e400a14a"
+      "bytes": 1393,
+      "sha256": "54ee7297b3698cca7780566e1b71c0d53e6aebd2d0e45838117b4e317e586872"
+    },
+    {
+      "file": "v2/textos.mjs",
+      "bytes": 2462,
+      "sha256": "0c1ed5e0f1f68e8c89bdfc961d01997e093df75f2e211ce46ab98322105bea5d"
+    },
+    {
+      "file": "v2/paper-sound.mjs",
+      "bytes": 5505,
+      "sha256": "d63a15c9111acf095c5ce66a4a39bcccc8d27e89b3b5979ffb9abd2e17a61b23"
+    },
+    {
+      "file": "v2/abertura.mjs",
+      "bytes": 9718,
+      "sha256": "593953374f9a61b5afb8427dbea1bc037629d937add15c7076c5ca9638335b49"
+    },
+    {
+      "file": "v2/fotos.mjs",
+      "bytes": 11853,
+      "sha256": "dabe6895b8fa1111069fec9f40be11e27cf27ba8fa8af2d09a37fd3840f028f5"
     },
     {
       "file": "v2/vendor/page-flip.browser.js",
@@ -145,6 +170,11 @@
       "file": "v2/assets/papelaria-v2-960.webp",
       "bytes": 73040,
       "sha256": "fa308ee3dde7619dfe3c7cb7299a3c83f7dad82362c0967fe2ae29a57a6696f8"
+    },
+    {
+      "file": "v2/audio/musica-convite-jezriel-e-beatriz.m4a",
+      "bytes": 3198628,
+      "sha256": "ee9bc75d7c335835b856f75e2868fef2b516697a03f2271ff33b7ecbac54d06f"
     }
   ]
 }

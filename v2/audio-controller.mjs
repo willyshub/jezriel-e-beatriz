@@ -1,5 +1,5 @@
 // Música opcional: um único <audio preload="none"> persistente (fora do livro; nunca recriado por folha).
-// Estados: sem-faixa | desligada | tocando | pausada (pessoa) | pausada-aba | bloqueada | erro
+// Estados: sem-faixa | desligada | carregando | tocando | pausada (pessoa) | pausada-aba | bloqueada | erro
 // Regras: nada baixa antes de pedir música; falha/bloqueio nunca impede abrir; pausa ao ocultar a aba e
 // OFERECE retomada (sem reabrir); nunca retoma sozinho após a pessoa silenciar.
 
@@ -27,16 +27,18 @@ export class AudioController {
     } catch { return ''; }
   }
 
+  /** Posição atual da faixa em segundos; -1 se não está tocando. */
+  get tempo() { return this.audio && !this.audio.paused ? this.audio.currentTime : -1; }
   get temFaixa() { return !!this.src; }
   /** O controle aparece quando há faixa ou quando a pessoa pediu música e não existe faixa. */
   get visible() { return this.temFaixa || this.pediu; }
   onChange(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
   #set(s) { if (s === this.state) return; this.state = s; this.listeners.forEach((fn) => fn(s)); }
 
-  #criar() {
+  #criar(preload = 'none') {
     if (this.audio) return this.audio;
     const a = this.doc.createElement('audio');
-    a.preload = 'none';
+    a.preload = preload;
     a.hidden = true;
     a.setAttribute('aria-hidden', 'true');
     a.loop = false; // o laço é manual para respeitar `inicioSegundos`
@@ -44,12 +46,33 @@ export class AudioController {
       if (!this.cfg.loop || this.state !== 'tocando') return;
       try { a.currentTime = this.#inicio(); a.play().catch(() => this.#set('bloqueada')); } catch { /* ok */ }
     });
-    a.addEventListener('error', () => { if (this.audio?.src) this.#set('erro'); });
+    a.addEventListener('error', () => {
+      if (!this.audio?.src) return;
+      if (!this.pediu) {
+        // Falha na pré-busca de metadados (ex.: arquivo ausente no pacote publicado): trata como "sem faixa", sem erro.
+        a.remove(); this.audio = null; this.src = ''; this.#set('sem-faixa');
+        return;
+      }
+      this.#set('erro');
+    });
     this.doc.body.append(a);
     this.audio = a;
     return a;
   }
   #inicio() { const n = Number(this.cfg.inicioSegundos); return Number.isFinite(n) && n > 0 ? n : 0; }
+
+  /**
+   * Com a página ociosa, baixa só os metadados da faixa (cabeçalho do arquivo), nunca a faixa inteira.
+   * Não faz nada com economia de dados ligada ou conexão 2g/lenta. Retorna true se pediu os metadados.
+   */
+  prepararMetadata() {
+    if (!this.src || this.audio) return false;
+    const c = typeof navigator !== 'undefined' ? navigator.connection : null;
+    if (c && (c.saveData === true || /(^|-)2g$/.test(c.effectiveType || ''))) return false;
+    const a = this.#criar('metadata');
+    a.src = this.src;
+    return true;
+  }
 
   /**
    * Chamar DENTRO do gesto "Abrir com música". Nunca lança: sem faixa ou bloqueio, o convite abre normalmente.
@@ -65,6 +88,7 @@ export class AudioController {
   async tocar() {
     if (!this.src) return this.state;
     const a = this.#criar();
+    a.preload = 'auto';
     if (!a.src) {
       a.src = this.src;
       const ini = this.#inicio();
@@ -72,12 +96,14 @@ export class AudioController {
     }
     const alvo = Math.max(0, Math.min(1, Number(this.cfg.volumeInicial) || 0.5));
     a.volume = 0;
+    this.#set('carregando');
     try {
       await a.play();
       this.#set('tocando');
       this.#fadeIn(a, alvo);
     } catch (e) {
       a.volume = alvo;
+      if (this.state !== 'carregando') return this.state; // pausada pela pessoa durante o carregamento
       this.#set(e?.name === 'NotAllowedError' ? 'bloqueada' : 'erro');
     }
     return this.state;
@@ -103,14 +129,14 @@ export class AudioController {
 
   /** Botão do controle: alterna conforme o estado. */
   alternar() {
-    if (this.state === 'tocando') { this.silenciar(); return Promise.resolve(this.state); }
+    if (this.state === 'tocando' || this.state === 'carregando') { this.silenciar(); return Promise.resolve(this.state); }
     if (this.state === 'sem-faixa') return Promise.resolve(this.state);
     this.pediu = true;
     return this.tocar();
   }
 
   #aoVisibilidade() {
-    if (this.doc.hidden) { if (this.state === 'tocando') this.#pausarInterno('pausada-aba'); }
+    if (this.doc.hidden) { if (this.state === 'tocando' || this.state === 'carregando') this.#pausarInterno('pausada-aba'); }
     // Ao voltar: permanece 'pausada-aba' e o controle oferece "Retomar" (sem reabrir o envelope, sem tocar sozinho).
   }
 
@@ -118,6 +144,7 @@ export class AudioController {
   descricao() {
     const t = this.cfg.titulo ? ` (${this.cfg.titulo})` : '';
     switch (this.state) {
+      case 'carregando': return { texto: 'Carregando música…', aria: 'Carregando a música. O convite pode ser lido normalmente', pressed: true, desabilitado: false };
       case 'tocando': return { texto: 'Som: ligado', aria: `Música tocando${t}. Tocar para pausar`, pressed: true, desabilitado: false };
       case 'pausada': return { texto: 'Som: pausado', aria: `Música pausada${t}. Tocar para ouvir`, pressed: false, desabilitado: false };
       case 'pausada-aba': return { texto: 'Retomar som', aria: `Música pausada ao sair da aba${t}. Tocar para retomar`, pressed: false, desabilitado: false };

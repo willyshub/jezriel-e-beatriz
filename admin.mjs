@@ -1,11 +1,23 @@
 import { validateRow, inviteLink, inviteLinkV2, adminTotals, parseBackup, csvCell, parseNomesAcompanhantes, isDemoBackup } from './domain.mjs';
+import * as A from './admin-acesso.mjs';
 const $=s=>document.querySelector(s), esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // `?demo=1` abre o painel sobre a lista de demonstração (namespace jb-demo-v2:*), sem tocar a lista real.
+// Demo fica sem senha: só tem dados fictícios e nunca lê/escreve a lista real; a senha não protegeria nada de valor.
 const DEMO=new URLSearchParams(location.search).get('demo')==='1';
-const key=DEMO?'jb-demo-v2:lista':'jb-lista-noivos-v1';let rows=[],candidate=null,candidateDemo=false,corrupt=false;
+const key=DEMO?'jb-demo-v2:lista':A.CHAVE_COFRE;let rows=[],candidate=null,candidateDemo=false,corrupt=false,vault=null,sessionKey=null,meta=A.metaVazia(),legacyText=null,lastActivity=Date.now(),hiddenAt=null;
 if(DEMO){$('#demo-banner').hidden=false;document.title='DEMONSTRAÇÃO · '+document.title;}
-try{const text=localStorage.getItem(key);if(text)rows=parseBackup(text);}catch{corrupt=true;$('#storage-error').hidden=false;$('#storage-error').textContent='Não foi possível ler a lista deste navegador. Seus dados não foram sobrescritos. Restaure um backup válido antes de continuar.';$('#add-form button').disabled=true;$('#backup').disabled=true;$('#csv').disabled=true;}
-function persist(next){const checked=parseBackup(JSON.stringify({version:1,rows:next}));localStorage.setItem(key,JSON.stringify({version:1,...(DEMO?{demo:true}:{}),rows:checked}));rows=checked;}
+const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>localStorage.setItem(k,v),del:k=>{try{localStorage.removeItem(k)}catch{}}};
+function setCorrupt(msg){corrupt=true;$('#storage-error').hidden=false;$('#storage-error').textContent=msg;$('#add-form button').disabled=true;$('#backup').disabled=true;$('#csv').disabled=true;}
+function saveMeta(){try{store.set(A.CHAVE_META,JSON.stringify(meta));}catch{}}
+async function persist(next){const checked=parseBackup(JSON.stringify({version:1,rows:next}));
+  if(DEMO)localStorage.setItem(key,JSON.stringify({version:1,demo:true,rows:checked}));
+  else{if(!sessionKey)throw Error('Painel bloqueado. Desbloqueie com a senha.');const novo=await A.gravarCofre(vault,sessionKey,checked);localStorage.setItem(key,JSON.stringify(novo));vault=novo;meta=A.registrarAlteracao(meta);saveMeta();}
+  rows=checked;updateBackupUi();}
+function fmtData(iso){try{return new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}catch{return iso}}
+const plural=n=>n+' '+(n===1?'alteração':'alterações');
+function updateBackupUi(){if(DEMO){$('#backup-banner').hidden=true;$('#backup-status').textContent='';return;}
+  const n=meta.alteracoes;$('#backup-banner').hidden=n===0;$('#backup-banner-texto').textContent=n?plural(n)+' desde o último backup. Exporte o backup agora.':'';
+  $('#backup-status').textContent=meta.ultimoBackup?'Último backup exportado neste navegador: '+fmtData(meta.ultimoBackup)+' · '+plural(n)+' desde então.':'Nenhum backup exportado ainda neste navegador · '+plural(n)+'.';}
 const base=new URL('index.html',location.href).href,baseV2=new URL('v2/index.html',location.href).href;
 function linkV2(row){const href=inviteLinkV2(baseV2,row);if(!DEMO)return href;const u=new URL(href);u.searchParams.set('demo','1');return u.href;}
 function draw(){
@@ -17,19 +29,61 @@ function draw(){
   document.querySelectorAll('[data-id]').forEach(article=>{
     const row=rows.find(r=>r.id===article.dataset.id),message=article.querySelector('[role=status]');
     article.querySelector('[data-status]').addEventListener('change',e=>{const input=article.querySelector('[data-confirmed]');if(e.target.value!=='confirmado')input.value='0';else if(Number(input.value)===0)input.value='1';});
-    article.querySelector('[data-save]').addEventListener('click',()=>{try{const updated=validateRow({...row,status:article.querySelector('[data-status]').value,confirmed:Number(article.querySelector('[data-confirmed]').value)});persist(rows.map(r=>r.id===row.id?updated:r));draw();$('#action-feedback').textContent=`Resposta de ${row.name} registrada na lista deste navegador.`;}catch(error){message.textContent=error.message;}});
+    article.querySelector('[data-save]').addEventListener('click',async()=>{try{const updated=validateRow({...row,status:article.querySelector('[data-status]').value,confirmed:Number(article.querySelector('[data-confirmed]').value)});await persist(rows.map(r=>r.id===row.id?updated:r));draw();$('#action-feedback').textContent=`Resposta de ${row.name} registrada na lista deste navegador.`;}catch(error){message.textContent=error.message;}});
     const copiar=async(link,okText)=>{try{await navigator.clipboard.writeText(link);message.textContent=okText;}catch{message.textContent='Copie o link abaixo:';const input=document.createElement('input');input.value=link;input.readOnly=true;input.setAttribute('aria-label','Link do convite para copiar');message.append(input);input.focus();input.select();}};
     article.querySelector('[data-copy]').addEventListener('click',()=>copiar(inviteLink(base,row),'Link copiado. Cole na conversa do convidado.'));
     article.querySelector('[data-copy-v2]').addEventListener('click',()=>{try{copiar(linkV2(row),'Link V2 copiado (nome, vagas e nomes dos acompanhantes). Cole na conversa do convidado.');}catch(error){message.textContent=error.message;}});
-    article.querySelector('[data-save-names]')?.addEventListener('click',()=>{try{const names=parseNomesAcompanhantes(article.querySelector('[data-names]').value);const {acompanhantes:_antigos,...semNomes}=row;const updated=validateRow(names.length?{...semNomes,acompanhantes:names}:semNomes);persist(rows.map(r=>r.id===row.id?updated:r));draw();$('#action-feedback').textContent=`Nomes de ${row.name} registrados (${names.filter(Boolean).length}). O link V2 já usa os nomes novos.`;}catch(error){message.textContent=error.message;}});
+    article.querySelector('[data-save-names]')?.addEventListener('click',async()=>{try{const names=parseNomesAcompanhantes(article.querySelector('[data-names]').value);const {acompanhantes:_antigos,...semNomes}=row;const updated=validateRow(names.length?{...semNomes,acompanhantes:names}:semNomes);await persist(rows.map(r=>r.id===row.id?updated:r));draw();$('#action-feedback').textContent=`Nomes de ${row.name} registrados (${names.filter(Boolean).length}). O link V2 já usa os nomes novos.`;}catch(error){message.textContent=error.message;}});
   });
 }
-$('#add-form').addEventListener('submit',event=>{event.preventDefault();if(corrupt)return;const data=new FormData(event.target);try{const names=parseNomesAcompanhantes(data.get('acompanhantes'));const row=validateRow({id:crypto.randomUUID(),name:data.get('name'),capacity:Number(data.get('capacity')),...(names.length?{acompanhantes:names}:{}),status:'pendente',confirmed:0});persist([...rows,row]);event.target.reset();draw();$('#add-feedback').textContent=`Convite de ${row.name} criado com ${row.capacity} vaga(s) totais.`;$('#guest-name').focus();}catch(error){$('#add-feedback').textContent=error.message;}});
+$('#add-form').addEventListener('submit',async event=>{event.preventDefault();if(corrupt)return;const data=new FormData(event.target);try{const names=parseNomesAcompanhantes(data.get('acompanhantes'));const row=validateRow({id:crypto.randomUUID(),name:data.get('name'),capacity:Number(data.get('capacity')),...(names.length?{acompanhantes:names}:{}),status:'pendente',confirmed:0});await persist([...rows,row]);event.target.reset();draw();$('#add-feedback').textContent=`Convite de ${row.name} criado com ${row.capacity} vaga(s) totais.`;$('#guest-name').focus();}catch(error){$('#add-feedback').textContent=error.message;}});
 $('#search').addEventListener('input',draw);$('#filter').addEventListener('change',draw);
 function download(content,name,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
-$('#backup').addEventListener('click',()=>{if(corrupt){$('#backup-feedback').textContent='A lista não foi carregada. Preserve o armazenamento original e restaure um backup válido.';return;}download(JSON.stringify({version:1,...(DEMO?{demo:true}:{}),exportedAt:new Date().toISOString(),rows},null,2),`${DEMO?'DEMO-':''}convites-backup-${new Date().toISOString().slice(0,10)}.json`,'application/json');$('#backup-feedback').textContent='Backup preparado. Guarde o arquivo em local privado.';});
+function exportar(){if(corrupt||(!DEMO&&!sessionKey)){$('#backup-feedback').textContent='A lista não foi carregada. Preserve o armazenamento original e restaure um backup válido.';return;}download(A.montarBackup(rows,{demo:DEMO}),(DEMO?'DEMO-':'')+'convites-backup-'+new Date().toISOString().slice(0,10)+'.json','application/json');if(!DEMO){meta=A.registrarBackup(meta);saveMeta();}updateBackupUi();$('#backup-feedback').textContent='Backup preparado e download iniciado. Confira se o arquivo foi salvo e guarde-o em local privado: ele não é cifrado.';}
+$('#backup').addEventListener('click',exportar);$('#backup-banner-btn').addEventListener('click',exportar);
 $('#csv').addEventListener('click',()=>{download('\ufeff'+[['Código','Titular','Vagas totais','Status','Pessoas confirmadas','Acompanhantes (nomes)'],...rows.map(r=>[r.id,r.name,r.capacity,r.status,r.confirmed,(r.acompanhantes||[]).join(' | ')])].map(row=>row.map(csvCell).join(';')).join('\r\n'),'lista-convidados.csv','text/csv;charset=utf-8');});
 $('#import').addEventListener('change',async event=>{candidate=null;$('#import-preview').hidden=true;const file=event.target.files[0];try{if(!file)return;if(file.size>2_000_000)throw Error('Backup muito grande.');const text=await file.text();candidate=parseBackup(text);candidateDemo=isDemoBackup(text);$('#demo-import-box').hidden=candidateDemo===DEMO;$('#demo-import-ok').checked=false;const total=adminTotals(candidate);$('#import-description').textContent=`O backup contém ${candidate.length} convites, ${total.capacity} vagas e ${total.confirmed} pessoas confirmadas. A restauração substituirá a lista atual de ${rows.length} convites. Exporte a lista atual antes de prosseguir.${candidateDemo&&!DEMO?' ATENÇÃO: este backup é de DEMONSTRAÇÃO (dados fictícios).':''}${!candidateDemo&&DEMO?' ATENÇÃO: este backup é da lista REAL e você está no painel de demonstração.':''}`;$('#import-preview').hidden=false;}catch(error){$('#backup-feedback').textContent=error.message;}event.target.value='';});
-$('#confirm-import').addEventListener('click',()=>{if(!candidate)return;if(candidateDemo!==DEMO&&!$('#demo-import-ok').checked){$('#backup-feedback').textContent=candidateDemo?'Este backup é de demonstração. Marque a confirmação explícita para colocá-lo na lista real.':'Este backup é da lista real. Marque a confirmação explícita para colocá-lo na demonstração.';return;}try{persist(candidate);candidate=null;corrupt=false;$('#storage-error').hidden=true;$('#add-form button').disabled=false;$('#backup').disabled=false;$('#csv').disabled=false;$('#import-preview').hidden=true;draw();$('#backup-feedback').textContent='Backup restaurado neste navegador.';}catch(error){$('#backup-feedback').textContent=`Não foi possível restaurar: ${error.message}`;}});
+$('#confirm-import').addEventListener('click',async()=>{if(!candidate)return;if(candidateDemo!==DEMO&&!$('#demo-import-ok').checked){$('#backup-feedback').textContent=candidateDemo?'Este backup é de demonstração. Marque a confirmação explícita para colocá-lo na lista real.':'Este backup é da lista real. Marque a confirmação explícita para colocá-lo na demonstração.';return;}try{await persist(candidate);if(!DEMO){meta={...meta,alteracoes:0};saveMeta();updateBackupUi();}candidate=null;corrupt=false;$('#storage-error').hidden=true;$('#add-form button').disabled=false;$('#backup').disabled=false;$('#csv').disabled=false;$('#import-preview').hidden=true;draw();$('#backup-feedback').textContent='Backup restaurado neste navegador.';}catch(error){$('#backup-feedback').textContent=`Não foi possível restaurar: ${error.message}`;}});
 $('#cancel-import').addEventListener('click',()=>{candidate=null;$('#import-preview').hidden=true;});
-draw();
+
+// ---- Proteção local por senha ----
+const show=(id,on)=>{$(id).hidden=!on;};
+function showPanel(){show('#gate',false);show('#painel',true);$('#prot-bar').hidden=DEMO;draw();updateBackupUi();}
+function showGate(which){show('#painel',false);show('#gate',true);show('#form-criar',which==='criar');show('#form-entrar',which==='entrar');}
+function lock(msg){sessionKey=null;rows=[];candidate=null;$('#list').innerHTML='';$('#stats').innerHTML='';$('#list-info').textContent='';$('#add-form').reset();$('#search').value='';$('#filter').value='todos';['#action-feedback','#add-feedback','#backup-feedback'].forEach(id=>$(id).textContent='');$('#import-preview').hidden=true;show('#form-troca',false);$('#form-troca').reset();
+  showGate('entrar');$('#senha-entrar').value='';$('#entrar-feedback').textContent=msg||'';$('#senha-entrar').focus();}
+function readTries(){try{return JSON.parse(store.get(A.CHAVE_TENTATIVAS))||{n:0,ate:0}}catch{return{n:0,ate:0}}}
+function boot(){
+  const raw=store.get(A.CHAVE_COFRE);
+  if(raw){try{vault=A.lerCofre(raw);}catch(error){setCorrupt(error.message+' Nada foi sobrescrito. Use "Esqueci a senha" para recomeçar e restaure um backup.');showGate('entrar');$('#form-entrar button').disabled=true;$('#esqueci').open=true;return;}
+    meta=A.lerMeta(store.get(A.CHAVE_META));showGate('entrar');return;}
+  legacyText=store.get(A.CHAVE_LEGADA);
+  if(legacyText){try{parseBackup(legacyText);show('#migracao-box',true);}catch{setCorrupt('A lista antiga deste navegador não pôde ser lida. Ela não foi alterada nem apagada. Restaure um backup válido.');legacyText=null;}}
+  meta=A.lerMeta(store.get(A.CHAVE_META));
+  if(corrupt){showGate('entrar');$('#form-entrar button').disabled=true;return;}
+  showGate('criar');
+}
+$('#migracao-backup').addEventListener('click',()=>{try{const old=parseBackup(legacyText);download(A.montarBackup(old),'convites-backup-antes-da-senha-'+new Date().toISOString().slice(0,10)+'.json','application/json');$('#criar-feedback').textContent='Backup baixado. Guarde-o em local privado e confira o arquivo antes de criar a senha.';}catch(error){$('#criar-feedback').textContent=error.message;}});
+$('#form-criar').addEventListener('submit',async event=>{event.preventDefault();const fb=$('#criar-feedback');try{A.validarSenhaNova($('#senha-nova').value,$('#senha-conf').value);fb.textContent='Criando proteção…';
+  const senha=$('#senha-nova').value;const r=legacyText?await A.migrarLegado(legacyText,senha):{...(await A.criarCofre(senha,[])),linhas:[]};
+  const conferido=await A.abrirCofre(r.cofre,senha);if(JSON.stringify(conferido.linhas)!==JSON.stringify(r.linhas))throw Error('A conferência da migração falhou.');
+  localStorage.setItem(A.CHAVE_COFRE,JSON.stringify(r.cofre));
+  if(legacyText){store.del(A.CHAVE_LEGADA);legacyText=null;show('#migracao-box',false);}
+  vault=r.cofre;sessionKey=conferido.chave;rows=conferido.linhas;$('#form-criar').reset();fb.textContent='';lastActivity=Date.now();showPanel();$('#action-feedback').textContent='Senha criada. Faça um backup agora para ter como recuperar a lista.';
+}catch(error){fb.textContent=error.message;}});
+$('#form-entrar').addEventListener('submit',async event=>{event.preventDefault();const fb=$('#entrar-feedback');const t=readTries();const agora=Date.now();
+  if(t.ate>agora){fb.textContent='Aguarde '+Math.ceil((t.ate-agora)/1000)+' s antes de tentar de novo.';return;}
+  try{fb.textContent='Verificando…';const r=await A.abrirCofre(vault,$('#senha-entrar').value);store.del(A.CHAVE_TENTATIVAS);sessionKey=r.chave;rows=r.linhas;$('#senha-entrar').value='';fb.textContent='';lastActivity=Date.now();showPanel();}
+  catch(error){const n=t.n+1;const espera=A.atrasoTentativas(n);try{store.set(A.CHAVE_TENTATIVAS,JSON.stringify({n,ate:Date.now()+espera}));}catch{}fb.textContent=error.message+(espera?' Aguarde '+Math.ceil(espera/1000)+' s para tentar de novo.':'');$('#senha-entrar').value='';}});
+$('#bloquear').addEventListener('click',()=>lock('Painel bloqueado.'));
+$('#abrir-troca').addEventListener('click',()=>{show('#form-troca',true);$('#troca-atual').focus();});
+$('#troca-cancelar').addEventListener('click',()=>{show('#form-troca',false);$('#form-troca').reset();$('#troca-feedback').textContent='';});
+$('#form-troca').addEventListener('submit',async event=>{event.preventDefault();const fb=$('#troca-feedback');try{fb.textContent='Trocando…';const r=await A.trocarSenha(vault,$('#troca-atual').value,$('#troca-nova').value,$('#troca-conf').value);localStorage.setItem(A.CHAVE_COFRE,JSON.stringify(r.cofre));vault=r.cofre;sessionKey=r.chave;$('#form-troca').reset();show('#form-troca',false);fb.textContent='';$('#action-feedback').textContent='Senha trocada. Use a nova senha no próximo acesso.';}catch(error){fb.textContent=error.message;}});
+$('#apagar-painel').addEventListener('click',()=>{const fb=$('#apagar-feedback');if($('#apagar-confirma').value.trim()!=='APAGAR'){fb.textContent='Digite APAGAR para confirmar.';return;}
+  [A.CHAVE_COFRE,A.CHAVE_META,A.CHAVE_TENTATIVAS].forEach(store.del);vault=null;sessionKey=null;rows=[];meta=A.metaVazia();corrupt=false;$('#storage-error').hidden=true;$('#add-form button').disabled=false;$('#backup').disabled=false;$('#csv').disabled=false;$('#apagar-confirma').value='';fb.textContent='';$('#esqueci').open=false;$('#form-entrar button').disabled=false;
+  boot();$('#criar-feedback').textContent='Dados do painel apagados. Crie uma senha nova e depois use "Restaurar backup JSON" para recuperar a lista.';});
+// Bloqueio automático: inatividade e aba oculta por tempo prolongado.
+['pointerdown','keydown','input','touchstart','scroll'].forEach(ev=>document.addEventListener(ev,()=>{lastActivity=Date.now();},{passive:true,capture:true}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else{if(sessionKey&&hiddenAt&&Date.now()-hiddenAt>A.OCULTA_MS)lock('Bloqueado: a aba ficou oculta por vários minutos.');hiddenAt=null;lastActivity=Date.now();}});
+setInterval(()=>{if(!sessionKey)return;const agora=Date.now();if(agora-lastActivity>A.INATIVIDADE_MS)lock('Bloqueado por inatividade.');else if(document.hidden&&hiddenAt&&agora-hiddenAt>A.OCULTA_MS)lock('Bloqueado: a aba ficou oculta por vários minutos.');},5000);
+if(DEMO){try{const text=localStorage.getItem(key);if(text)rows=parseBackup(text);}catch{setCorrupt('Não foi possível ler a lista de demonstração deste navegador. Seus dados não foram sobrescritos. Restaure um backup válido antes de continuar.');}showPanel();}else boot();

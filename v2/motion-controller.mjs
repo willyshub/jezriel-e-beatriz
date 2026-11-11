@@ -39,7 +39,7 @@ export class MotionController {
 
   /** Marca a folha como revelada. O CSS cuida de linhas, atrasos e redução. Fica revelada ao voltar. */
   activate(sheet) {
-    if (!sheet) return;
+    if (!sheet || sheet.dataset.coreo) return; // coreografia da abertura revela esta folha sozinha
     // requestAnimationFrame garante que o estado inicial (oculto) tenha sido pintado antes da transição.
     requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('is-in')));
   }

@@ -11,7 +11,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ctext y='40' font-size='40'%3E%E2%99%A1%3C/text%3E%3C/svg%3E">
 <script>document.documentElement.classList.add('js')</script>
 <link rel="stylesheet" href="theme.css">
-<link rel="preload" as="image" href="assets/flores-v2-480.webp" imagesrcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" imagesizes="100vw">
+<link rel="preload" as="image" href="assets/flores-v2-480.webp" imagesrcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" imagesizes="(min-width:700px) 560px, 55vw">
 <script type="module" src="app.mjs"></script>
 <noscript><style>#sheet-store{display:block!important}.cover,.controls,.toolbar,.dogear,.corner,.rsvp-open,.peek-hint{display:none!important}.stage{height:auto}</style></noscript>
 </head>
@@ -56,29 +56,72 @@
     <button type="button" class="pill" id="reduce" aria-pressed="false" aria-label="Reduzir efeitos">Efeitos</button>
   </div>
 
-  <!-- Capa: papel ocupa a tela, selo na zona do polegar. -->
+  <!-- Capa = tela de abertura: envelope de papel em CSS/SVG (sem imagem para a primeira pintura). Ao tocar, a carta sai do
+       envelope e vira a primeira folha (abertura.mjs). A carta (clone da folha 1) é criada pelo JS no momento do toque. -->
   <section class="cover" id="cover" aria-labelledby="cover-title">
-    <img class="cover__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="100vw" width="480" height="720" fetchpriority="high" decoding="async" alt="">
+    <img class="cover__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(min-width:700px) 560px, 55vw" width="480" height="720" decoding="async" alt="">
     <div class="cover__body">
       <div class="cover__head">
-        <p class="eyebrow">Uma carta para você</p>
+        <p class="eyebrow" id="cover-eyebrow">Uma carta para você</p>
         <h1 id="cover-title" class="cover__names"><span>Jezriel</span> <i>&amp;</i> <span>Beatriz</span></h1>
         <p class="cover__date">27 · 03 · 2027</p>
         <p class="cover__for" id="cover-for" hidden></p>
       </div>
-      <div class="cover__action">
-        <button type="button" class="seal" id="seal" aria-label="Romper o selo e abrir em silêncio">
-          <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
-            <defs>
-              <radialGradient id="wax" cx=".38" cy=".3" r=".85"><stop offset="0" stop-color="#d8b36c"/><stop offset=".5" stop-color="#a77c3d"/><stop offset="1" stop-color="#6f4d22"/></radialGradient>
-            </defs>
-            <path fill="#34463c" fill-opacity=".18" transform="translate(2 4)" d="M60 6c10 0 14 6 24 8s20 8 22 20-6 16-4 26 8 18 0 28-18 8-26 14-18 10-28 4-12-12-22-16S6 82 8 70s10-16 8-28 0-22 14-26 18-4 26-8c2-1 3-2 4-2z"/>
-            <path fill="url(#wax)" d="M60 6c10 0 14 6 24 8s20 8 22 20-6 16-4 26 8 18 0 28-18 8-26 14-18 10-28 4-12-12-22-16S6 82 8 70s10-16 8-28 0-22 14-26 18-4 26-8c2-1 3-2 4-2z"/>
-            <circle cx="60" cy="60" r="36" fill="none" stroke="#fff3d6" stroke-opacity=".55" stroke-width="1.6"/>
-            <circle cx="60" cy="60" r="31" fill="none" stroke="#3d2a10" stroke-opacity=".25" stroke-width="1"/>
-            <text x="60" y="68" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="26" fill="#fff3d6" fill-opacity=".92">J&amp;B</text>
+
+      <div class="scene" id="scene">
+        <svg class="env__back" viewBox="0 0 310 210" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="env-in" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdbd9d"/><stop offset=".6" stop-color="#e2d5ba"/><stop offset="1" stop-color="#ebe0c9"/></linearGradient>
+          </defs>
+          <rect width="310" height="210" rx="4" fill="url(#env-in)"/>
+          <polygon points="0,0 310,0 155,122" fill="#bfae8b" opacity=".55"/>
+        </svg>
+        <div class="slot" id="slot" aria-hidden="true"></div>
+        <svg class="env__front" viewBox="0 0 310 210" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="env-paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset=".55" stop-color="#f4ecdb"/><stop offset="1" stop-color="#e8dcc5"/></linearGradient>
+            <linearGradient id="env-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34463c" stop-opacity=".26"/><stop offset="1" stop-color="#34463c" stop-opacity="0"/></linearGradient>
+          </defs>
+          <polygon class="env__fsh" points="0,0 155,126 310,0 310,22 155,150 0,22" fill="url(#env-shade)"/>
+          <polygon points="0,0 155,122 310,0 310,210 0,210" fill="url(#env-paper)"/>
+          <polygon points="0,210 155,118 310,210" fill="#fffaf0" opacity=".55"/>
+          <path d="M0 0 L155 122 L310 0 M0 210 L155 118 L310 210" fill="none" stroke="#a77c3d" stroke-opacity=".38" stroke-width="1"/>
+          <rect x=".5" y=".5" width="309" height="209" rx="4" fill="none" stroke="#a77c3d" stroke-opacity=".3"/>
+        </svg>
+        <p class="env__para" id="env-para">Para você</p>
+        <div class="env__flap" id="flap" aria-hidden="true">
+          <svg class="flap__f" viewBox="0 0 310 126" preserveAspectRatio="none" focusable="false">
+            <defs><linearGradient id="flap-out" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#efe5d0"/></linearGradient></defs>
+            <polygon points="0,0 310,0 155,124" fill="url(#flap-out)" stroke="#a77c3d" stroke-opacity=".4" stroke-width="1" stroke-linejoin="round"/>
           </svg>
+          <svg class="flap__b" viewBox="0 0 310 126" preserveAspectRatio="none" focusable="false">
+            <defs>
+              <linearGradient id="flap-lin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfbd98"/><stop offset="1" stop-color="#e3d3b2"/></linearGradient>
+              <pattern id="flap-pat" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path d="M0 5h10" stroke="#a77c3d" stroke-opacity=".16" stroke-width="1"/></pattern>
+            </defs>
+            <polygon points="0,0 310,0 155,124" fill="url(#flap-lin)"/>
+            <polygon points="0,0 310,0 155,124" fill="url(#flap-pat)" stroke="#a77c3d" stroke-opacity=".4" stroke-width="1" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <button type="button" class="seal" id="seal" aria-label="Romper o selo e abrir em silêncio">
+          <span class="seal__h seal__h--l"><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><use href="#seal-art"/></svg></span>
+          <span class="seal__h seal__h--r"><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><use href="#seal-art"/></svg></span>
         </button>
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+          <defs>
+            <radialGradient id="wax" cx=".38" cy=".3" r=".85"><stop offset="0" stop-color="#d8b36c"/><stop offset=".5" stop-color="#a77c3d"/><stop offset="1" stop-color="#6f4d22"/></radialGradient>
+            <g id="seal-art">
+              <path fill="#34463c" fill-opacity=".18" transform="translate(2 4)" d="M60 6c10 0 14 6 24 8s20 8 22 20-6 16-4 26 8 18 0 28-18 8-26 14-18 10-28 4-12-12-22-16S6 82 8 70s10-16 8-28 0-22 14-26 18-4 26-8c2-1 3-2 4-2z"/>
+              <path fill="url(#wax)" d="M60 6c10 0 14 6 24 8s20 8 22 20-6 16-4 26 8 18 0 28-18 8-26 14-18 10-28 4-12-12-22-16S6 82 8 70s10-16 8-28 0-22 14-26 18-4 26-8c2-1 3-2 4-2z"/>
+              <circle cx="60" cy="60" r="36" fill="none" stroke="#fff3d6" stroke-opacity=".55" stroke-width="1.6"/>
+              <circle cx="60" cy="60" r="31" fill="none" stroke="#3d2a10" stroke-opacity=".25" stroke-width="1"/>
+              <text x="60" y="68" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="26" fill="#fff3d6" fill-opacity=".92">J&amp;B</text>
+            </g>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="cover__action">
         <div class="cover__buttons">
           <button type="button" class="btn btn--primary" id="open-music">Abrir com música</button>
           <button type="button" class="btn btn--ghost" id="open-silent">Abrir em silêncio</button>
@@ -100,7 +143,8 @@
   <article class="sheet sheet--reveal" data-title="Revelação" aria-label="Revelação">
     <div class="sheet__inner">
       <img class="reveal__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(max-width: 560px) 100vw, 560px" width="480" height="720" decoding="async" alt="">
-      <p class="eyebrow line" style="--i:0">Com alegria, convidamos você</p>
+      <span class="reveal__glow" aria-hidden="true"></span>
+      <p class="reveal__lead line" style="--i:0"><span class="reveal__nome" hidden></span> <span class="reveal__frase">Há uma data que queremos viver ao seu lado</span></p>
       <h2 class="names">
         <span class="names__a line" style="--i:1">Jezriel</span>
         <span class="names__amp line" style="--i:2" aria-hidden="true">&amp;</span>
@@ -110,34 +154,12 @@
     </div>
   </article>
 
-  <article class="sheet sheet--memories" data-title="Memórias" aria-label="Memórias">
-    <div class="sheet__inner">
-      <header class="mem__head">
-        <p class="eyebrow line" style="--i:0">Memórias</p>
-        <h2 class="mem__title line" style="--i:1">Pedaços de afeto, <em>guardados com carinho.</em></h2>
-      </header>
-      <!-- Mosaico assimétrico de 6 colunas (plano §3). PROVISÓRIO: recortes dos placeholders. -->
-      <div class="mosaic">
-        <figure class="mosaic__a line" style="--i:2;--dy:22">
-          <img src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(max-width: 560px) 64vw, 360px" width="480" height="720" loading="lazy" decoding="async" alt="Flores provisórias em tons de marfim, ilustração de demonstração" style="object-position:22% 8%">
-        </figure>
-        <figure class="mosaic__b line" style="--i:3;--dy:34">
-          <img src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(max-width: 560px) 46vw, 260px" width="480" height="720" loading="lazy" decoding="async" alt="Detalhe provisório de fita terracota, imagem de demonstração" style="object-position:8% 92%">
-        </figure>
-        <figure class="mosaic__c line" style="--i:4;--dy:18">
-          <img src="assets/papelaria-v2-480.webp" srcset="assets/papelaria-v2-480.webp 480w, assets/papelaria-v2-960.webp 960w" sizes="(max-width: 560px) 78vw, 440px" width="480" height="320" loading="lazy" decoding="async" alt="Papelaria provisória com selo dourado, imagem de demonstração" style="object-position:50% 48%">
-        </figure>
-        <figure class="mosaic__d line" style="--i:5;--dy:26">
-          <img src="assets/papelaria-v2-480.webp" srcset="assets/papelaria-v2-480.webp 480w, assets/papelaria-v2-960.webp 960w" sizes="240px" width="480" height="320" loading="lazy" decoding="async" alt="Detalhe provisório do selo dourado, imagem de demonstração" style="object-position:84% 30%">
-        </figure>
-      </div>
-      <p class="mem__note line" style="--i:6">Imagens provisórias. As fotos do casal entram aqui.</p>
-    </div>
-  </article>
+  <!-- As folhas de Memórias (0 a 20 fotos) são criadas por fotos.mjs a partir de config.mjs e inseridas aqui. -->
+  <template id="gal-ancora"></template>
 
   <article class="sheet sheet--party" data-title="Celebração" aria-label="Celebração">
     <div class="sheet__inner">
-      <img class="party__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="30vw" width="480" height="720" loading="lazy" decoding="async" alt="" style="object-position:4% 94%">
+      <img class="party__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(max-width: 560px) 100vw, 560px" width="480" height="720" loading="lazy" decoding="async" alt="" style="object-position:50% 12%">
       <div class="party__body">
         <p class="eyebrow line" style="--i:0">Guarde esta data</p>
         <p class="party__day line" style="--i:1" aria-hidden="true">27</p>
@@ -146,7 +168,8 @@
         <p class="party__venue line" style="--i:4">Jardim do Ipê — <em>espaço demonstrativo</em></p>
         <p class="party__city line" style="--i:4">Trindade — PE</p>
         <p class="party__fake line" style="--i:5">Local fictício, usado apenas nesta demonstração.</p>
-        <p class="line" style="--i:6"><a class="outline-link" href="https://www.google.com/maps/search/?api=1&amp;query=Trindade%2C%20Pernambuco" target="_blank" rel="noopener noreferrer">Ver no mapa <span aria-hidden="true">↗</span></a></p>
+        <p class="party__fecho line" style="--i:6">E a sua presença faz parte dela.</p>
+        <p class="line" style="--i:7"><a class="outline-link" href="https://www.google.com/maps/search/?api=1&amp;query=Trindade%2C%20Pernambuco" target="_blank" rel="noopener noreferrer">Ver no mapa <span aria-hidden="true">↗</span></a></p>
       </div>
     </div>
   </article>
@@ -165,6 +188,9 @@
     </div>
   </article>
 </div>
+
+<!-- Modo foco das fotos (montado por fotos.mjs, fora do palco). -->
+<div id="foco" hidden></div>
 
 <p class="sr-only" id="live" aria-live="polite"></p>
 

@@ -68,6 +68,8 @@ class FlipEngine {
     this.pf.on('changeState', (e) => hooks.onState?.(e.data));
     this.pf.loadFromHTML(sheets);
     this.peekTimer = 0;
+    this.avisado = false;
+    this.cancelando = false; // soltou a folha de volta: sem som de virada
   }
   get state() { return this.pf.getState(); }
   get busy() { return this.state === 'flipping' || this.state === 'user_fold'; }
@@ -91,6 +93,9 @@ class FlipEngine {
     const pos = calc.getPosition();
     const rapido = vx < -0.45 && pos.x < rect.pageWidth * 0.92;
     const virar = pos.x < rect.pageWidth * 0.6 || rapido;
+    this.cancelando = !virar;
+    // A animação de soltar o arrasto não emite 'flipping' de forma confiável: o som sai daqui (uma vez só).
+    if (virar) { this.avisado = true; this.hooks.onTurn?.(); }
     const y = calc.getCorner() === 'bottom' ? rect.height : 0;
     this.pf.userStop(p, true); // encerra o estado de toque sem acionar o limite padrão
     try {
@@ -146,6 +151,7 @@ class DeckEngine {
   resize() {}
   #to(i) {
     if (i < 0 || i >= this.sheets.length || i === this.index) return;
+    this.hooks.onTurn?.();
     this.#show(i);
     this.hooks.onFlip(i);
   }
@@ -179,8 +185,9 @@ export class BookController {
    * @param {(info:object)=>void} [o.onMode] motor/estado mudou
    * @param {(state:string)=>void} [o.onState] estado da dobra mudou
    */
-  constructor({ stage, host, sheets, measure, motion, onChange, onMode, onState }) {
-    Object.assign(this, { stage, host, sheets, measure, motion, onChange, onMode, onState });
+  constructor({ stage, host, sheets, measure, motion, onChange, onMode, onState, onTurn }) {
+    Object.assign(this, { stage, host, sheets, measure, motion, onChange, onMode, onState, onTurn });
+    this.origem = 'botao';
     this.engine = null;
     this.index = 0;
     this.PageFlip = null;
@@ -259,7 +266,7 @@ export class BookController {
     this.engine?.destroy();
     this.engine = null;
     this.stage.dataset.fold = 'read';
-    const hooks = { onFlip: (i) => this.#flipped(i), onState: (st) => this.#estado(st) };
+    const hooks = { onFlip: (i) => this.#flipped(i), onState: (st) => this.#estado(st), onTurn: () => this.onTurn?.(this.origem) };
     const want = this.#wantedMode();
     if (want === 'flip') {
       try {
@@ -285,6 +292,11 @@ export class BookController {
 
   /** Estado da dobra (read | fold_corner | user_fold | flipping): a orelha e a dica se escondem quando não é 'read'. */
   #estado(st) {
+    // Som de virada: no início da animação de virada (não ao soltar de volta, nem na espiada).
+    if (st === 'flipping' && this.engine?.type === 'flip') {
+      if (!this.engine.cancelando && !this.engine.avisado) this.onTurn?.(this.origem);
+    }
+    if (st === 'read' && this.engine) { this.engine.cancelando = false; this.engine.avisado = false; }
     this.stage.dataset.fold = st;
     this.onState?.(st);
   }
@@ -299,9 +311,17 @@ export class BookController {
     this.onChange?.(this.index, { user });
   }
 
-  next() { if (this.opened && this.index < this.lastIndex) this.engine.next(); }
-  prev() { if (this.opened && this.index > 0) this.engine.prev(); }
-  goTo(i) { if (this.opened && i !== this.index && i >= 0 && i <= this.lastIndex) this.engine.goTo(i); }
+  /** `origem` identifica o gesto para o efeito sonoro: botao | teclado | canto | arrasto | deslize. */
+  next(origem = 'botao') { if (this.opened && this.index < this.lastIndex) { this.origem = origem; this.engine.next(); } }
+  prev(origem = 'botao') { if (this.opened && this.index > 0) { this.origem = origem; this.engine.prev(); } }
+  goTo(i, origem = 'botao') { if (this.opened && i !== this.index && i >= 0 && i <= this.lastIndex) { this.origem = origem; this.engine.goTo(i); } }
+
+  /** O ponto (clientX/Y) está numa zona de canto de virada? */
+  emZonaDeCanto(e) {
+    const r = this.stage.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top, z = this.zone;
+    return y > r.height - z && (x > r.width - z || x < z);
+  }
 
   /** Dica de "espiada": levanta o canto inferior direito e solta. Sem hover, funciona em celular. */
   peek() {
@@ -339,7 +359,7 @@ export class BookController {
     const st = this.stage;
     st.addEventListener('pointerdown', (e) => {
       if (!this.opened || !this.engine || (e.pointerType === 'mouse' && e.button !== 0)) return;
-      if (e.target.closest('button,input,select,textarea,label,summary')) return; // links iniciam o gesto: o clique é suprimido se houver arraste
+      if (e.target.closest('button:not(.gal__btn),input,select,textarea,label,summary')) return; // links iniciam o gesto: o clique é suprimido se houver arraste
       if (this.g) return;
       this.cancelPeek();
       const p = this.#local(e);
@@ -377,13 +397,14 @@ export class BookController {
       const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
       if (g.moved) this.suppressClickUntil = performance.now() + 450;
       if (g.zone) {
+        this.origem = g.moved ? 'arrasto' : 'canto';
         if (cancelled && !g.moved) { this.engine.cornerEnd(p, true, 0, g.zone); return; }
         this.engine.cornerEnd(p, g.moved, g.vx, g.zone);
         return;
       }
       if (cancelled) return;
       // Gesto horizontal fora dos cantos: vira a folha. Diagonal curta ou vertical não vira.
-      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) dx < 0 ? this.next() : this.prev();
+      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) dx < 0 ? this.next('deslize') : this.prev('deslize');
     };
     st.addEventListener('pointerup', (e) => finish(e, false));
     st.addEventListener('pointercancel', (e) => finish(e, true));
