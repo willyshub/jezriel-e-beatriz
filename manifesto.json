@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-11-11T18:43:05.897Z",
+  "files": [
+    {
+      "file": "index.html",
+      "bytes": 7268,
+      "sha256": "50ec00b6209ae42dc2ab7dc914dc5efdf64edfc92e31a435f0a24669eeb65aea"
+    },
+    {
+      "file": "admin.html",
+      "bytes": 3190,
+      "sha256": "8f5b5c6e5b50324677cc72c2570bbe704c4afacd3cf10997a0b00d67edcbda92"
+    },
+    {
+      "file": "style.css",
+      "bytes": 15520,
+      "sha256": "89313f02044d0812c2cedc56555eedc525842c5167f6b21b9134a537a42b0fa1"
+    },
+    {
+      "file": "guest.mjs",
+      "bytes": 9674,
+      "sha256": "7048250b1364ed4f010004228ec563799da7c13300cec46eaa889dc8fd7dd937"
+    },
+    {
+      "file": "admin.mjs",
+      "bytes": 7167,
+      "sha256": "6c9634cbe483350192702934ea4fac828d175175093ae52ee75047aa50b1f55a"
+    },
+    {
+      "file": "domain.mjs",
+      "bytes": 5451,
+      "sha256": "7a55885a7a32ea46f7aa36027d14f68f40b73b4e8753cd6c4ab04bcae8f46f7f"
+    },
+    {
+      "file": "sound.mjs",
+      "bytes": 1489,
+      "sha256": "4064f0a6379ca881e96b129fbc3c24405e758d5fcbc8f771c9dfb269c449d0c4"
+    },
+    {
+      "file": "config.json",
+      "bytes": 650,
+      "sha256": "cefa7477ee6f74068e20121a6e889dad7fd2468e51d80ad04561bcda7b184fe4"
+    },
+    {
+      "file": ".nojekyll",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "assets/jardim-480.webp",
+      "bytes": 63836,
+      "sha256": "7c151068bb0a0a15d7e199a8b2e5245a2d902fce91777bb46b9a60f28919c9c4"
+    },
+    {
+      "file": "assets/jardim-768.webp",
+      "bytes": 160012,
+      "sha256": "6e385b3cdb43d4aebe3bacccbc63505a0f590cdf9bc23a9d8533813859a918df"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f7f2e9"><meta name="description" content="Uma carta, uma história e um dia para celebrar. 27 de março de 2027.">
+<meta name="robots" content="noindex,nofollow"><title>Uma carta para você · 27.03.2027</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ctext y='40' font-size='40'%3E%E2%99%A1%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="style.css"><script type="module" src="guest.mjs"></script>
+</head><body class="guest">
+<p id="preview-banner" class="preview-banner" hidden>Prévia de teste · local e prazo demonstrativos</p>
+<noscript><p class="notice">Este convite tem efeitos interativos. Ative o JavaScript para abrir a carta e preparar sua resposta. O casamento será em 27/03/2027.</p></noscript>
+<div class="sound-control"><button id="sound" aria-pressed="false" aria-label="Ativar efeitos sonoros">Som desligado <span aria-hidden="true">♪</span></button></div>
+<main>
+<section class="welcome" id="welcome" aria-labelledby="welcome-title">
+  <p class="eyebrow">UMA CARTA ESPECIAL</p><h1 id="welcome-title">Algumas histórias<br>merecem ser vividas<br><em>juntos.</em></h1>
+  <p class="recipient" id="recipient">E a nossa fica mais bonita com você.</p>
+  <div class="envelope-scene"><div class="envelope" id="envelope"><div class="envelope-lining"></div><div class="letter-peek"><span>COM AMOR</span><i>27.03.2027</i></div><div class="envelope-front"></div><div class="envelope-flap"></div><button class="wax-seal" id="seal" aria-label="Romper o selo e abrir a carta"><span aria-hidden="true">♡</span></button><p class="envelope-caption">PARA UM DIA INESQUECÍVEL</p></div></div>
+  <p class="opening-copy" id="opening-copy" role="status">Toque no selo para descobrir.</p>
+  <label class="sound-choice"><input id="sound-choice" type="checkbox"> Abrir com efeitos sonoros delicados</label>
+  <button class="text-button" id="skip">Abrir em silêncio, sem animação <span aria-hidden="true">↗</span></button>
+  <div class="welcome-date"><span>27</span><i>MARÇO</i><span>2027</span></div>
+</section>
+<div id="book" hidden>
+  <header class="book-header"><span class="book-mark">UM NOVO CAPÍTULO</span><span id="chapter-position">01 / 04</span></header>
+  <nav class="chapter-nav" aria-label="Capítulos do convite"><button data-chapter="0">O convite</button><button data-chapter="1">Nossa história</button><button data-chapter="2">O grande dia</button><button data-chapter="3">Sua presença</button></nav>
+  <div class="book-stage" id="book-stage">
+  <article class="chapter cover" id="chapter-0" aria-labelledby="couple-title">
+    <img id="garden" class="garden" src="assets/jardim-768.webp" srcset="assets/jardim-480.webp 480w, assets/jardim-768.webp 768w" sizes="(min-width: 700px) 520px, 100vw" width="768" height="1152" fetchpriority="high" decoding="async" alt="">
+    <div class="cover-text"><p class="eyebrow">O AMOR NOS TROUXE ATÉ AQUI</p><h2 id="couple-title"><span id="bride">Beatriz</span><em>&</em><span id="groom">seu amor</span></h2><p class="configuration-note" id="name-note">O nome do noivo será incluído na versão final.</p><div class="ceremony-date"><span>27</span><div>MARÇO<br><strong>2027</strong></div></div><p class="dedication" id="dedication">Convidamos você a fazer parte<br>do nosso próximo capítulo.</p></div>
+    <div class="cover-bottom"><p>Há encontros que viram destino.<br>E dias que viram memória.</p><button class="next-link" data-next>Abra o próximo capítulo <span aria-hidden="true">→</span></button></div>
+  </article>
+  <article class="chapter story" id="chapter-1" hidden><p class="eyebrow">O QUE NOS TROUXE ATÉ AQUI</p><h2>Uma vida de histórias.<br><em>A nossa, juntos.</em></h2><div class="ornament" aria-hidden="true">✧</div><p class="prose">Entre tantos caminhos, encontramos um ao outro. Agora, queremos celebrar o início desta nova etapa perto de quem faz parte da nossa vida.</p><div id="photos" class="photo-gallery"></div><div id="photo-placeholder" class="story-placeholder"><span aria-hidden="true">♡</span><p>As nossas memórias,<br><em>em breve neste espaço.</em></p><small>As fotos do casal serão incluídas aqui.</small></div><p class="editorial-note">Texto de apresentação provisório, para aprovação do casal.</p><button class="next-link" data-next>O dia que vem aí <span aria-hidden="true">→</span></button></article>
+  <article class="chapter details" id="chapter-2" hidden><p class="eyebrow">GUARDE ESTE DIA NO CORAÇÃO</p><h2>Vamos celebrar<br><em>o amor.</em></h2><div class="date-medallion"><span>27</span><small>MARÇO · 2027</small></div><p class="details-time" id="time">Horário a confirmar</p><h3 id="venue">O cenário do nosso sim</h3><p id="address">Local e endereço serão incluídos pelos noivos.</p><div class="map-actions"><a id="maps" class="outline-link" hidden target="_blank" rel="noopener noreferrer">Abrir no Maps ↗</a><a id="waze" class="outline-link" hidden target="_blank" rel="noopener noreferrer">Ir com Waze ↗</a></div><p id="map-pending" class="small-note">A rota estará disponível quando o local for definido.</p><div class="fine-divider"></div><p class="prose">O melhor deste dia será<br>dividir a alegria com você.</p><button class="primary" data-next>Responder ao convite <span aria-hidden="true">→</span></button></article>
+  <article class="chapter response" id="chapter-3" hidden><p class="eyebrow">UM LUGAR RESERVADO PARA VOCÊ</p><h2>A sua presença<br><em>faz a diferença.</em></h2><p id="invite-error" class="notice" hidden></p><p id="allowance" class="allowance"></p><p id="deadline" class="small-note"></p><form id="rsvp" novalidate><div id="people"></div><button class="primary" type="submit">Preparar minha resposta <span aria-hidden="true">→</span></button></form><p id="form-feedback" role="status" aria-live="polite"></p><section id="message-preview" class="message-preview" hidden aria-labelledby="preview-title"><h3 id="preview-title">Sua resposta está pronta.</h3><p>Confira os nomes. Ao abrir o WhatsApp, toque em <strong>enviar</strong> para que os noivos recebam a mensagem.</p><pre id="message-text"></pre><a id="whatsapp" class="primary" target="_blank" rel="noopener noreferrer" hidden>Abrir WhatsApp ↗</a><button id="copy-message" class="outline-link" type="button">Copiar mensagem</button><p id="destination-warning" class="small-note" hidden>O WhatsApp de teste ainda será configurado. Por enquanto, você pode conferir e copiar a mensagem.</p><p id="copy-feedback" role="status"></p></section></article>
+  </div>
+  <div class="book-pagination"><button id="previous" aria-label="Capítulo anterior">← Anterior</button><div class="chapter-dots" id="chapter-dots" aria-hidden="true"></div><button id="next" aria-label="Próximo capítulo">Próximo →</button></div>
+  <footer class="guest-footer">COM CARINHO, ATÉ O NOSSO GRANDE DIA<span>27 · 03 · 2027</span><button id="replay" class="text-button">Rever a abertura</button></footer>
+</div>
+</main><div class="petals" id="petals" aria-hidden="true"></div>
+</body></html>

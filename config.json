@@ -1,0 +1,31 @@
+{
+  "versao": 1,
+  "casal": {
+    "noivo": "Jezriel",
+    "noiva": "Beatriz"
+  },
+  "evento": {
+    "data": "2027-03-27",
+    "horario": "19:00",
+    "fuso": "America/Sao_Paulo",
+    "localNome": "Jardim do Ipê — espaço demonstrativo",
+    "endereco": "Trindade — Pernambuco",
+    "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Trindade%2C%20Pernambuco",
+    "wazeUrl": "",
+    "localFicticio": true
+  },
+  "whatsapp": {
+    "numero": "",
+    "modo": "teste"
+  },
+  "confirmacao": {
+    "prazo": "2027-03-01",
+    "prazoFicticio": true
+  },
+  "fotos": [],
+  "som": {
+    "oferecer": true,
+    "volume": 0.14
+  },
+  "previa": true
+}
