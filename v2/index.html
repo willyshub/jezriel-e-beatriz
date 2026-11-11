@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<!-- Sem user-scalable=no: o zoom do navegador permanece liberado. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f2e9">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Convite V2: uma carta de folhas que se dobram a partir do canto inferior direito. 27 de março de 2027.">
+<title>Uma carta para você · V2</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ctext y='40' font-size='40'%3E%E2%99%A1%3C/text%3E%3C/svg%3E">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="theme.css">
+<link rel="preload" as="image" href="assets/flores-v2-480.webp" imagesrcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" imagesizes="100vw">
+<script type="module" src="app.mjs"></script>
+<noscript><style>#sheet-store{display:block!important}.cover,.controls,.toolbar,.dogear,.corner,.rsvp-open,.peek-hint{display:none!important}.stage{height:auto}</style></noscript>
+</head>
+<body>
+<div class="app" id="app">
+<div class="stage" id="stage" data-state="cover">
+
+  <!-- Área do livro. A biblioteca é carregada somente após o gesto de abrir. -->
+  <div class="book-host" id="book-host" inert></div>
+
+  <!-- Zonas de toque dos cantos (touch-action: none só aqui; o resto mantém o zoom por pinça). -->
+  <div class="corner corner--bl" aria-hidden="true"></div>
+  <div class="corner corner--br" aria-hidden="true"></div>
+
+  <!-- Orelha (dog-ear) permanente e discreta: indica que o canto inferior direito é pegável. -->
+  <svg class="dogear" id="dogear" viewBox="0 0 54 54" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="ear-flap" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffdf8"/><stop offset=".55" stop-color="#efe5d2"/><stop offset="1" stop-color="#d9ccba"/></linearGradient>
+      <linearGradient id="ear-under" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9bba4"/><stop offset=".45" stop-color="#e6dcc9"/><stop offset="1" stop-color="#efe7d8"/></linearGradient>
+      <linearGradient id="ear-shade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34463c" stop-opacity=".30"/><stop offset="1" stop-color="#34463c" stop-opacity="0"/></linearGradient>
+    </defs>
+    <!-- o que fica por baixo do canto dobrado -->
+    <polygon points="54,0 54,54 0,54" fill="url(#ear-under)"/>
+    <!-- sombra projetada pela dobra -->
+    <polygon points="54,0 0,54 20,64 64,20" fill="url(#ear-shade)" opacity=".55"/>
+    <!-- verso do papel dobrado -->
+    <polygon points="0,0 54,0 0,54" fill="url(#ear-flap)"/>
+    <line x1="54" y1="0" x2="0" y2="54" stroke="#a77c3d" stroke-opacity=".45" stroke-width="1"/>
+  </svg>
+
+  <!-- Dica de gesto (fora das folhas, para não ser cortada pela dobra). Some na primeira virada. -->
+  <p class="peek-hint" id="peek-hint" aria-hidden="true">Vire a folha pelo canto <span>↘</span></p>
+
+  <nav class="controls" id="controls" aria-label="Navegação entre as folhas">
+    <button type="button" class="round" id="prev" aria-label="Folha anterior"><span aria-hidden="true">‹</span></button>
+    <button type="button" class="round" id="next" aria-label="Próxima folha"><span aria-hidden="true">›</span></button>
+  </nav>
+
+  <div class="toolbar" id="toolbar">
+    <button type="button" class="pill" id="goto-local">Local</button>
+    <button type="button" class="pill pill--sound" id="sound" hidden aria-pressed="false"><span aria-hidden="true">♪</span> <span id="sound-text">Som</span></button>
+    <button type="button" class="pill" id="reduce" aria-pressed="false" aria-label="Reduzir efeitos">Efeitos</button>
+  </div>
+
+  <!-- Capa: papel ocupa a tela, selo na zona do polegar. -->
+  <section class="cover" id="cover" aria-labelledby="cover-title">
+    <img class="cover__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="100vw" width="480" height="720" fetchpriority="high" decoding="async" alt="">
+    <div class="cover__body">
+      <div class="cover__head">
+        <p class="eyebrow">Uma carta para você</p>
+        <h1 id="cover-title" class="cover__names"><span>Jezriel</span> <i>&amp;</i> <span>Beatriz</span></h1>
+        <p class="cover__date">27 · 03 · 2027</p>
+        <p class="cover__for" id="cover-for" hidden></p>
+      </div>
+      <div class="cover__action">
+        <button type="button" class="seal" id="seal" aria-label="Romper o selo e abrir em silêncio">
+          <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+            <defs>
+              <radialGradient id="wax" cx=".38" cy=".3" r=".85"><stop offset="0" stop-color="#d8b36c"/><stop offset=".5" stop-color="#a77c3d"/><stop offset="1" stop-color="#6f4d22"/></radialGradient>
+            </defs>
+            <path fill="#34463c" fill-opacity=".18" transform="translate(2 4)" d="M60 6c10 0 14 6 24 8s20 8 22 20-6 16-4 26 8 18 0 28-18 8-26 14-18 10-28 4-12-12-22-16S6 82 8 70s10-16 8-28 0-22 14-26 18-4 26-8c2-1 3-2 4-2z"/>
+            <path fill="url(#wax)" d="M60 6c10 0 14 6 24 8s20 8 22 20-6 16-4 26 8 18 0 28-18 8-26 14-18 10-28 4-12-12-22-16S6 82 8 70s10-16 8-28 0-22 14-26 18-4 26-8c2-1 3-2 4-2z"/>
+            <circle cx="60" cy="60" r="36" fill="none" stroke="#fff3d6" stroke-opacity=".55" stroke-width="1.6"/>
+            <circle cx="60" cy="60" r="31" fill="none" stroke="#3d2a10" stroke-opacity=".25" stroke-width="1"/>
+            <text x="60" y="68" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="26" fill="#fff3d6" fill-opacity=".92">J&amp;B</text>
+          </svg>
+        </button>
+        <div class="cover__buttons">
+          <button type="button" class="btn btn--primary" id="open-music">Abrir com música</button>
+          <button type="button" class="btn btn--ghost" id="open-silent">Abrir em silêncio</button>
+          <button type="button" class="link" id="open-local">Ir direto ao local</button>
+        </div>
+        <p class="cover__status" id="cover-status" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Medição invisível: decide se o conteúdo cabe no livro ou precisa de leitura com rolagem. -->
+  <div class="measure" id="measure" aria-hidden="true"></div>
+</div>
+
+<!-- Folhas. Textos em HTML, sem ids dentro das folhas (os nós são movidos entre motores).
+     Imagens: placeholders gerados (flores/papelaria), PROVISÓRIOS; não são fotos do casal. -->
+<div id="sheet-store" hidden>
+
+  <article class="sheet sheet--reveal" data-title="Revelação" aria-label="Revelação">
+    <div class="sheet__inner">
+      <img class="reveal__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(max-width: 560px) 100vw, 560px" width="480" height="720" decoding="async" alt="">
+      <p class="eyebrow line" style="--i:0">Com alegria, convidamos você</p>
+      <h2 class="names">
+        <span class="names__a line" style="--i:1">Jezriel</span>
+        <span class="names__amp line" style="--i:2" aria-hidden="true">&amp;</span>
+        <span class="names__b line" style="--i:3">Beatriz</span>
+      </h2>
+      <p class="reveal__date line" style="--i:4"><time datetime="2027-03-27">27 de março de 2027</time></p>
+    </div>
+  </article>
+
+  <article class="sheet sheet--memories" data-title="Memórias" aria-label="Memórias">
+    <div class="sheet__inner">
+      <header class="mem__head">
+        <p class="eyebrow line" style="--i:0">Memórias</p>
+        <h2 class="mem__title line" style="--i:1">Pedaços de afeto, <em>guardados com carinho.</em></h2>
+      </header>
+      <!-- Mosaico assimétrico de 6 colunas (plano §3). PROVISÓRIO: recortes dos placeholders. -->
+      <div class="mosaic">
+        <figure class="mosaic__a line" style="--i:2;--dy:22">
+          <img src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(max-width: 560px) 64vw, 360px" width="480" height="720" loading="lazy" decoding="async" alt="Flores provisórias em tons de marfim, ilustração de demonstração" style="object-position:22% 8%">
+        </figure>
+        <figure class="mosaic__b line" style="--i:3;--dy:34">
+          <img src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(max-width: 560px) 46vw, 260px" width="480" height="720" loading="lazy" decoding="async" alt="Detalhe provisório de fita terracota, imagem de demonstração" style="object-position:8% 92%">
+        </figure>
+        <figure class="mosaic__c line" style="--i:4;--dy:18">
+          <img src="assets/papelaria-v2-480.webp" srcset="assets/papelaria-v2-480.webp 480w, assets/papelaria-v2-960.webp 960w" sizes="(max-width: 560px) 78vw, 440px" width="480" height="320" loading="lazy" decoding="async" alt="Papelaria provisória com selo dourado, imagem de demonstração" style="object-position:50% 48%">
+        </figure>
+        <figure class="mosaic__d line" style="--i:5;--dy:26">
+          <img src="assets/papelaria-v2-480.webp" srcset="assets/papelaria-v2-480.webp 480w, assets/papelaria-v2-960.webp 960w" sizes="240px" width="480" height="320" loading="lazy" decoding="async" alt="Detalhe provisório do selo dourado, imagem de demonstração" style="object-position:84% 30%">
+        </figure>
+      </div>
+      <p class="mem__note line" style="--i:6">Imagens provisórias. As fotos do casal entram aqui.</p>
+    </div>
+  </article>
+
+  <article class="sheet sheet--party" data-title="Celebração" aria-label="Celebração">
+    <div class="sheet__inner">
+      <img class="party__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="30vw" width="480" height="720" loading="lazy" decoding="async" alt="" style="object-position:4% 94%">
+      <div class="party__body">
+        <p class="eyebrow line" style="--i:0">Guarde esta data</p>
+        <p class="party__day line" style="--i:1" aria-hidden="true">27</p>
+        <h2 class="party__month line" style="--i:2"><time datetime="2027-03-27">de março de 2027</time></h2>
+        <p class="party__time line" style="--i:3">19h00</p>
+        <p class="party__venue line" style="--i:4">Jardim do Ipê — <em>espaço demonstrativo</em></p>
+        <p class="party__city line" style="--i:4">Trindade — PE</p>
+        <p class="party__fake line" style="--i:5">Local fictício, usado apenas nesta demonstração.</p>
+        <p class="line" style="--i:6"><a class="outline-link" href="https://www.google.com/maps/search/?api=1&amp;query=Trindade%2C%20Pernambuco" target="_blank" rel="noopener noreferrer">Ver no mapa <span aria-hidden="true">↗</span></a></p>
+      </div>
+    </div>
+  </article>
+
+  <article class="sheet sheet--rsvp" data-title="Confirmar presença" aria-label="Confirmar presença">
+    <div class="sheet__inner">
+      <img class="rsvp__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="100vw" width="480" height="720" loading="lazy" decoding="async" alt="" style="object-position:70% 100%">
+      <div class="rsvp-cta">
+        <p class="eyebrow line" style="--i:0">Sua presença</p>
+        <h2 class="rsvp-cta__title line" style="--i:1">Vamos <em>comemorar juntos?</em></h2>
+        <p class="rsvp-cta__who line" style="--i:2" data-fill="para"></p>
+        <p class="rsvp-cta__text line" style="--i:3">Responda por você e pelas pessoas do seu convite. Você revisa a mensagem e escolhe o contato do noivo ou da noiva no WhatsApp.</p>
+        <p class="line" style="--i:4"><button type="button" class="btn btn--primary rsvp-open">Confirmar presença</button></p>
+        <p class="rsvp-cta__draft line" style="--i:5" data-fill="rascunho" hidden>Há um rascunho salvo neste aparelho.</p>
+      </div>
+    </div>
+  </article>
+</div>
+
+<p class="sr-only" id="live" aria-live="polite"></p>
+
+<!-- Painel de resposta: fora do palco/livro, para não herdar gestos de virada. Conteúdo montado por rsvp-controller.mjs. -->
+<div class="rsvp" id="rsvp" hidden>
+  <section class="rsvp__card" role="dialog" aria-modal="true" aria-labelledby="rsvp-title">
+    <header class="rsvp__head">
+      <div>
+        <p class="eyebrow rsvp__badge"></p>
+        <h2 class="rsvp__title" id="rsvp-title" tabindex="-1"></h2>
+      </div>
+      <button type="button" class="rsvp__close" aria-label="Fechar resposta"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="rsvp__body"></div>
+  </section>
+</div>
+</div>
+</body>
+</html>

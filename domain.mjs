@@ -16,14 +16,39 @@ export function inviteLink(base, row) {
 export function readInvite(url) {
   const token = new URL(url).searchParams.get('convite');
   if (!token) return null;
-  if (token.length > 4096 || !/^[\w-]+$/.test(token)) throw Error('Este link de convite está incompleto ou inválido.');
+  // Limite global de 8192 para comportar o token v2 (nomes pré-definidos). Tokens v1 continuam limitados a 4096.
+  if (token.length > 8192 || !/^[\w-]+$/.test(token)) throw Error('Este link de convite está incompleto ou inválido.');
   try {
     const normalized = token.replaceAll('-', '+').replaceAll('_', '/');
     const binary = atob(normalized + '='.repeat((4 - normalized.length % 4) % 4));
     const data = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(binary, c => c.charCodeAt(0))));
-    if (data.v !== 1) throw Error();
+    if (data.v === 2) return validateInviteV2(data);
+    if (data.v !== 1 || token.length > 4096) throw Error();
     return validateInvite(data);
   } catch { throw Error('Este link de convite está incompleto ou inválido. Peça o link novamente aos noivos.'); }
+}
+// Token v2 (opcional): igual ao v1, com `v: 2` e `acompanhantes` (nomes pré-definidos dos acompanhantes, até vagas-1).
+// Entradas vazias ("") significam vaga de acompanhante sem nome definido. A V1 ignora o campo extra.
+export function validateInviteV2(row) {
+  const invite = validateInvite(row);
+  const list = row.acompanhantes ?? [];
+  if (!Array.isArray(list) || list.length > invite.capacity - 1) throw Error('A lista de acompanhantes excede as vagas do convite.');
+  const acompanhantes = list.map(n => {
+    if (typeof n !== 'string') throw Error('Nome de acompanhante inválido.');
+    const name = n.replace(/\s+/g, ' ').trim();
+    if (name.length > 100) throw Error('Use nomes de acompanhantes com até 100 caracteres.');
+    return name;
+  });
+  return { ...invite, acompanhantes };
+}
+export function inviteLinkV2(base, row) {
+  const invite = validateInviteV2(row);
+  const bytes = new TextEncoder().encode(JSON.stringify({ v: 2, ...invite }));
+  let binary = ''; for (const b of bytes) binary += String.fromCharCode(b);
+  const token = btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+  if (token.length > 8192) throw Error('Os nomes pré-definidos deixam o link grande demais. Use menos nomes ou nomes mais curtos.');
+  const url = new URL(base); url.search = ''; url.hash = ''; url.searchParams.set('convite', token);
+  return url.href;
 }
 export function validatePeople(invite, people) {
   if (!Array.isArray(people) || people.length !== invite.capacity) throw Error('Confira as pessoas incluídas neste convite.');
@@ -59,7 +84,9 @@ export function validateRow(row) {
   if (!statuses.includes(row.status) || !Number.isInteger(row.confirmed) || row.confirmed < 0 || row.confirmed > invite.capacity) throw Error('Quantidade confirmada inválida para este convite.');
   if (row.status !== 'confirmado' && row.confirmed !== 0) throw Error('Convites pendentes ou recusados devem ter zero pessoas confirmadas.');
   if (row.status === 'confirmado' && row.confirmed === 0) throw Error('Um convite confirmado precisa de pelo menos uma pessoa.');
-  return {...invite, status: row.status, confirmed: row.confirmed};
+  // `acompanhantes` é opcional (nomes pré-definidos para o link V2); linhas antigas continuam idênticas.
+  const names = row.acompanhantes === undefined ? null : validateInviteV2(row).acompanhantes;
+  return {...invite, ...(names?.length ? { acompanhantes: names } : {}), status: row.status, confirmed: row.confirmed};
 }
 export function adminTotals(rows) {
   return rows.reduce((total, raw) => {
@@ -78,4 +105,15 @@ export function csvCell(value) {
   let text = String(value);
   if (/^[\s]*[=+\-@]/.test(text)) text = "'" + text;
   return '"' + text.replaceAll('"','""') + '"';
+}
+
+/** Texto (um nome por linha) -> lista de acompanhantes. Linhas vazias no meio viram vaga sem nome; vazias no fim são descartadas. */
+export function parseNomesAcompanhantes(text) {
+  const list = String(text ?? '').split(/\r?\n/).map(l => l.replace(/\s+/g, ' ').trim());
+  while (list.length && !list[list.length - 1]) list.pop();
+  return list;
+}
+/** Identifica backup/lista de demonstração (campo `demo: true`), que nunca deve entrar na lista real sem escolha explícita. */
+export function isDemoBackup(text) {
+  try { return JSON.parse(text)?.demo === true; } catch { return false; }
 }

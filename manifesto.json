@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T18:46:54.484Z",
+  "generatedAt": "2026-11-11T20:56:18.479Z",
   "files": [
     {
       "file": "index.html",
@@ -8,8 +8,8 @@
     },
     {
       "file": "admin.html",
-      "bytes": 3190,
-      "sha256": "8f5b5c6e5b50324677cc72c2570bbe704c4afacd3cf10997a0b00d67edcbda92"
+      "bytes": 4303,
+      "sha256": "bc163c64133cf7fb7bc8217556df6383fc2bd617c2961e1bb0651e077ca86eea"
     },
     {
       "file": "style.css",
@@ -23,13 +23,13 @@
     },
     {
       "file": "admin.mjs",
-      "bytes": 7167,
-      "sha256": "6c9634cbe483350192702934ea4fac828d175175093ae52ee75047aa50b1f55a"
+      "bytes": 10128,
+      "sha256": "2ee27aafbdad6c89177fe4a8b8cd68cde198c7092d7aa78611ef97400678d71a"
     },
     {
       "file": "domain.mjs",
-      "bytes": 5451,
-      "sha256": "7a55885a7a32ea46f7aa36027d14f68f40b73b4e8753cd6c4ab04bcae8f46f7f"
+      "bytes": 7995,
+      "sha256": "59966f6391b1e3b6ac557aa7cff78204ec3bb7cb21b74bd13c08fcf03795575c"
     },
     {
       "file": "sound.mjs",
@@ -55,6 +55,96 @@
       "file": "assets/jardim-768.webp",
       "bytes": 160012,
       "sha256": "6e385b3cdb43d4aebe3bacccbc63505a0f590cdf9bc23a9d8533813859a918df"
+    },
+    {
+      "file": "v2/index.html",
+      "bytes": 12754,
+      "sha256": "50100472877f2d74a1b6ebeeda88c3360aa87cda21b9c2c4999ba124aefd5b85"
+    },
+    {
+      "file": "v2/theme.css",
+      "bytes": 25363,
+      "sha256": "2f67bfbc331412321fb31d6c67692a90efb23620b9c0efbec20e6037f55c94b1"
+    },
+    {
+      "file": "v2/app.mjs",
+      "bytes": 9421,
+      "sha256": "dccc36403c0d0d215a0052efbe737cfd16332e536708728b53200ef1ba0053aa"
+    },
+    {
+      "file": "v2/book-controller.mjs",
+      "bytes": 16749,
+      "sha256": "a57f4e6c3b9e5268409d90e1e42f651b7e962f1c1740b71e220e551a64d2c527"
+    },
+    {
+      "file": "v2/motion-controller.mjs",
+      "bytes": 1898,
+      "sha256": "1a552475b0b44f77f59fdbc81608aeeec6b17f2c4bdd31bdcf8775b8675e4950"
+    },
+    {
+      "file": "v2/audio-controller.mjs",
+      "bytes": 5831,
+      "sha256": "d298321d3f6a9242f42515403ce368a83c873f693d20b5e07e24a23e14a93534"
+    },
+    {
+      "file": "v2/rsvp-controller.mjs",
+      "bytes": 14606,
+      "sha256": "2c06c87fee53f00e41faf1b64a702ded5d73fcff43f3fb66e84d702acad149b3"
+    },
+    {
+      "file": "v2/share.mjs",
+      "bytes": 3061,
+      "sha256": "58930d17790b428fbe7069f572035b41f3b3730e0211f9038f6854af12943096"
+    },
+    {
+      "file": "v2/config.mjs",
+      "bytes": 781,
+      "sha256": "bc5b3616c86a25367301105bcc4e3512ee38f99c0cf36819d9c37724e400a14a"
+    },
+    {
+      "file": "v2/vendor/page-flip.browser.js",
+      "bytes": 44058,
+      "sha256": "bbaca0bbef57a22bb66a3fc69d67baf9a17fb9a9c89ec9ed35e2b91abe4bd1e7"
+    },
+    {
+      "file": "v2/vendor/page-flip.LICENSE",
+      "bytes": 1063,
+      "sha256": "88d7b609a3be5efa2abe8648ddc35d5489579db5e06299545760df45c2c32d66"
+    },
+    {
+      "file": "v2/demo/index.html",
+      "bytes": 3391,
+      "sha256": "13f4b0e958f86d6612c2fdf7a696628e4a051d5aa2efffec2deda216232ade65"
+    },
+    {
+      "file": "v2/demo/demo.mjs",
+      "bytes": 4490,
+      "sha256": "07d485a93503589355a3a30c69f2d52ae0c2500d1a91d1a24d94e5baf69609d8"
+    },
+    {
+      "file": "v2/demo/demo-lab.mjs",
+      "bytes": 4614,
+      "sha256": "84cfcef578e26c366d7a81dfc42ac07c613af41482c0a181eda69f386b33a932"
+    },
+    {
+      "file": "v2/assets/flores-v2-480.webp",
+      "bytes": 37740,
+      "sha256": "afeac50d119869e0597cda8b0d55edad058b34d5a1cff35fbba484836f7ded23"
+    },
+    {
+      "file": "v2/assets/flores-v2-960.webp",
+      "bytes": 140046,
+      "sha256": "0b2f6a8be150f8bb6a668d2d5648b8aa6528cef541b362d1bc8aa49273264ba6"
+    },
+    {
+      "file": "v2/assets/papelaria-v2-480.webp",
+      "bytes": 16448,
+      "sha256": "a3a16cbd61c2e8451104efecae1dacdcff3318a1c93212e8e0f6f344e1eae52c"
+    },
+    {
+      "file": "v2/assets/papelaria-v2-960.webp",
+      "bytes": 73040,
+      "sha256": "fa308ee3dde7619dfe3c7cb7299a3c83f7dad82362c0967fe2ae29a57a6696f8"
     }
   ]
 }
