@@ -15,8 +15,13 @@ const base = {
    * Sem fotos, a folha de memórias não existe. Enquanto as fotos do casal não chegam, entram 3 imagens PROVISÓRIAS
    * (recortes das duas bases de demonstração). Em demonstração, ?fotos=N simula de 0 a 20.
    */
-  fotos: fotosProvisorias(3),
-  fotosProvisorias: true,
+  // Prévia local para o casal (12/11/2026): as 3 fotos enviadas, repetidas em alternância até o limite de 20.
+  // As fotos ficam em assets/fotos/ (fora do Git e fora do pacote público até autorização de publicação).
+  fotos: Array.from({ length: 20 }, (_, i) => {
+    const n = (i % 3) + 1;
+    return { src: `assets/fotos/casal-${n}-480.webp`, srcset: `assets/fotos/casal-${n}-480.webp 480w, assets/fotos/casal-${n}-960.webp 960w`, w: 480, h: 854, alt: 'Jezriel e Beatriz', foco: '50% 38%' };
+  }),
+  fotosProvisorias: false,
 };
 
 /** Gancho de QA: window.__JB_V2_CONFIG__ (definido antes do módulo) mescla a configuração, só no navegador de teste. */

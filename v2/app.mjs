@@ -41,6 +41,15 @@ const store = $('sheet-store');
 const galFolhas = montarFolhas(fotos, T.memorias, { provisorias: !!config.fotosProvisorias });
 const ancora = $('gal-ancora');
 galFolhas.forEach((f) => store.insertBefore(f, ancora));
+// Salmos 126.5 ("semeiam em lágrimas") divide a galeria ao meio quando há 2+ folhas de memórias; senão fica antes dela.
+if (galFolhas.length >= 2) store.insertBefore(store.querySelector('.sheet--verso[data-verso=v5]'), galFolhas[Math.ceil(galFolhas.length / 2)]);
+store.querySelectorAll('.sheet--verso').forEach((s) => {
+  const v = T.versos[s.dataset.verso];
+  s.querySelector('.verso__intro').textContent = v.intro;
+  s.querySelector('.verso__texto').textContent = `“${v.texto}”`;
+  s.querySelector('.verso__ref').textContent = v.ref;
+  s.setAttribute('aria-label', `Passagem bíblica, ${v.ref}`);
+});
 const planoGal = organizarFolhas(fotos.length);
 
 const sheets = [...store.querySelectorAll('.sheet')];

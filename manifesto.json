@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T23:26:17.120Z",
+  "generatedAt": "2026-11-13T00:21:08.716Z",
   "files": [
     {
       "file": "index.html",
@@ -63,18 +63,18 @@
     },
     {
       "file": "v2/index.html",
-      "bytes": 14750,
-      "sha256": "49501ec663df57de5f07d6c0ad1bb26f7e3327dc76ea884e3931d22f8071035c"
+      "bytes": 17398,
+      "sha256": "8682347818f54661a178a7b7f9c4605b811c24d88d0035dbe06308079296f159"
     },
     {
       "file": "v2/theme.css",
-      "bytes": 31297,
-      "sha256": "eac1c4283a92ac079decbbda0ad0bf2d2c08e30eede7f15d7f916c819d487c6a"
+      "bytes": 33823,
+      "sha256": "651e4d25b187ef4e329ad82f87de8f6eb00cb612403ab29d13f58a3ae5b1a1b1"
     },
     {
       "file": "v2/app.mjs",
-      "bytes": 15801,
-      "sha256": "20ac7fa6a8b1a2d4e471ea25bc3f4cedd51817c972dc4820350356bf31a82f97"
+      "bytes": 16414,
+      "sha256": "fd33255e4fc426f0f0040def75148262a2dcc97385d3675954504f6b9ca41e28"
     },
     {
       "file": "v2/book-controller.mjs",
@@ -103,13 +103,13 @@
     },
     {
       "file": "v2/config.mjs",
-      "bytes": 1393,
-      "sha256": "54ee7297b3698cca7780566e1b71c0d53e6aebd2d0e45838117b4e317e586872"
+      "bytes": 1875,
+      "sha256": "3105fc800e019c833525d449ef0b317121495a6048565f827294648fcb95ef9d"
     },
     {
       "file": "v2/textos.mjs",
-      "bytes": 2462,
-      "sha256": "0c1ed5e0f1f68e8c89bdfc961d01997e093df75f2e211ce46ab98322105bea5d"
+      "bytes": 3701,
+      "sha256": "cf66386d8ec3ab3f213979e526ab80c0af3d4cc04d3dcdcd051f7e7f6ae273a9"
     },
     {
       "file": "v2/paper-sound.mjs",
@@ -170,6 +170,36 @@
       "file": "v2/assets/papelaria-v2-960.webp",
       "bytes": 73040,
       "sha256": "fa308ee3dde7619dfe3c7cb7299a3c83f7dad82362c0967fe2ae29a57a6696f8"
+    },
+    {
+      "file": "v2/assets/fotos/casal-1-480.webp",
+      "bytes": 40106,
+      "sha256": "ced03d40db285bd37bd1e03d0cedea9a6ea0f53fe5a42c811b4059cec6d2f0c3"
+    },
+    {
+      "file": "v2/assets/fotos/casal-1-960.webp",
+      "bytes": 117414,
+      "sha256": "898eff725d4dde2b68a65508a63e453b97fce9f83fcea51e949cef6fbca7d719"
+    },
+    {
+      "file": "v2/assets/fotos/casal-2-480.webp",
+      "bytes": 90258,
+      "sha256": "125a47ee2d8054a04400da1674212c536bffb9fbe397e247fcc7bd2346c0e495"
+    },
+    {
+      "file": "v2/assets/fotos/casal-2-960.webp",
+      "bytes": 241614,
+      "sha256": "f8efb14f660108ab3b3defccc51f620a83423e49bc123d5d6182b6edebf92cce"
+    },
+    {
+      "file": "v2/assets/fotos/casal-3-480.webp",
+      "bytes": 94074,
+      "sha256": "2f2ecdda2d237d1970fb2871e316e8b28cf0a1f37865a21a6798991b3ee33dc4"
+    },
+    {
+      "file": "v2/assets/fotos/casal-3-960.webp",
+      "bytes": 256524,
+      "sha256": "da96a60f7ad6d612cc203b5705b864829c3ea9cb90611f09e4278bba63478c47"
     },
     {
       "file": "v2/audio/musica-convite-jezriel-e-beatriz.m4a",

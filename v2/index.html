@@ -51,9 +51,9 @@
   </nav>
 
   <div class="toolbar" id="toolbar">
-    <button type="button" class="pill" id="goto-local">Local</button>
-    <button type="button" class="pill pill--sound" id="sound" hidden aria-pressed="false"><span aria-hidden="true">♪</span> <span id="sound-text">Som</span></button>
-    <button type="button" class="pill" id="reduce" aria-pressed="false" aria-label="Reduzir efeitos">Efeitos</button>
+    <button type="button" class="pill pill--ico" id="goto-local" aria-label="Ir para o local" title="Local"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-6.5-6.1-6.5-11a6.5 6.5 0 0 1 13 0c0 4.9-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg></button>
+    <button type="button" class="pill pill--ico pill--sound" id="sound" hidden aria-pressed="false" title="Música"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/><line class="ico__off" x1="3" y1="3" x2="21" y2="21"/></svg><span id="sound-text" class="sr-only">Som</span></button>
+    <button type="button" class="pill pill--ico" id="reduce" aria-pressed="false" aria-label="Reduzir efeitos de movimento" title="Efeitos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/><line class="ico__off" x1="3" y1="3" x2="21" y2="21"/></svg></button>
   </div>
 
   <!-- Capa = tela de abertura: envelope de papel em CSS/SVG (sem imagem para a primeira pintura). Ao tocar, a carta sai do
@@ -154,9 +154,34 @@
     </div>
   </article>
 
+  <!-- Passagens bíblicas: textos em textos.mjs (versos). A folha v5 é movida para o meio da galeria por app.mjs. -->
+  <article class="sheet sheet--verso" data-verso="v3" data-title="Palavra" aria-label="Passagem bíblica">
+    <div class="sheet__inner">
+      <span class="verso__orn line" style="--i:0" aria-hidden="true">❦</span>
+      <p class="verso__intro line" style="--i:1"></p>
+      <blockquote class="verso line" style="--i:2"><p class="verso__texto"></p></blockquote>
+      <p class="verso__ref line" style="--i:3"></p>
+    </div>
+  </article>
+  <article class="sheet sheet--verso" data-verso="v5" data-title="Palavra" aria-label="Passagem bíblica">
+    <div class="sheet__inner">
+      <span class="verso__orn line" style="--i:0" aria-hidden="true">❦</span>
+      <p class="verso__intro line" style="--i:1"></p>
+      <blockquote class="verso line" style="--i:2"><p class="verso__texto"></p></blockquote>
+      <p class="verso__ref line" style="--i:3"></p>
+    </div>
+  </article>
   <!-- As folhas de Memórias (0 a 20 fotos) são criadas por fotos.mjs a partir de config.mjs e inseridas aqui. -->
   <template id="gal-ancora"></template>
 
+  <article class="sheet sheet--verso" data-verso="v6" data-title="Palavra" aria-label="Passagem bíblica">
+    <div class="sheet__inner">
+      <span class="verso__orn line" style="--i:0" aria-hidden="true">❦</span>
+      <p class="verso__intro line" style="--i:1"></p>
+      <blockquote class="verso line" style="--i:2"><p class="verso__texto"></p></blockquote>
+      <p class="verso__ref line" style="--i:3"></p>
+    </div>
+  </article>
   <article class="sheet sheet--party" data-title="Celebração" aria-label="Celebração">
     <div class="sheet__inner">
       <img class="party__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="(max-width: 560px) 100vw, 560px" width="480" height="720" loading="lazy" decoding="async" alt="" style="object-position:50% 12%">
@@ -174,6 +199,14 @@
     </div>
   </article>
 
+  <article class="sheet sheet--verso" data-verso="v2" data-title="Palavra" aria-label="Passagem bíblica">
+    <div class="sheet__inner">
+      <span class="verso__orn line" style="--i:0" aria-hidden="true">❦</span>
+      <p class="verso__intro line" style="--i:1"></p>
+      <blockquote class="verso line" style="--i:2"><p class="verso__texto"></p></blockquote>
+      <p class="verso__ref line" style="--i:3"></p>
+    </div>
+  </article>
   <article class="sheet sheet--rsvp" data-title="Confirmar presença" aria-label="Confirmar presença">
     <div class="sheet__inner">
       <img class="rsvp__flora" src="assets/flores-v2-480.webp" srcset="assets/flores-v2-480.webp 480w, assets/flores-v2-960.webp 960w" sizes="100vw" width="480" height="720" loading="lazy" decoding="async" alt="" style="object-position:70% 100%">

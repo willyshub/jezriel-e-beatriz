@@ -41,6 +41,30 @@ export function montarTextos({ nome = null, vagas = 1 } = {}) {
       eyebrow: 'Guarde esta data',
       fecho: plural ? 'E a presença de vocês faz parte dela.' : 'E a sua presença faz parte dela.',
     },
+    // ---- Passagens bíblicas (Salmos 126, tradução ARA conforme enviada por Will em 12/11/2026).
+    // Cada uma tem uma folha própria de destaque. `intro` é a ponte contextual na voz do casal (rascunho para revisão).
+    versos: {
+      v3: {
+        intro: 'Quando olhamos para o caminho até aqui, só conseguimos dizer:',
+        texto: 'Grandes coisas fez o Senhor por nós, e, por isso, estamos alegres.',
+        ref: 'Salmos 126.3',
+      },
+      v5: {
+        intro: 'Ao longo desta história, aprendemos que',
+        texto: 'Os que semeiam em lágrimas segarão com alegria.',
+        ref: 'Salmos 126.5',
+      },
+      v6: {
+        intro: 'E agora chegou o tempo da colheita.',
+        texto: 'Aquele que leva a preciosa semente, andando e chorando, voltará, sem dúvida, com alegria, trazendo consigo os seus molhos.',
+        ref: 'Salmos 126.6',
+      },
+      v2: {
+        intro: plural ? 'Queremos vocês entre os que vão ver isso de perto:' : 'Queremos você entre os que vão ver isso de perto:',
+        texto: 'Então, a nossa boca se encheu de riso, e a nossa língua, de cânticos; então, se dizia entre as nações: Grandes coisas fez o Senhor a estes.',
+        ref: 'Salmos 126.2',
+      },
+    },
     // ---- Folha final: título [normal, destaque]
     final: {
       eyebrow: 'Sua presença',
