@@ -126,7 +126,9 @@ export function montarFolhas(fotos, t, { provisorias = false, plano = organizarF
         loading: 'lazy', decoding: 'async', alt: '', style: f.foco ? `object-position:${f.foco}` : '',
       });
       const btn = h('button', { type: 'button', class: 'gal__btn', 'data-foto': String(idx), 'aria-label': `Ampliar foto ${idx + 1} de ${fotos.length}: ${f.alt}` }, img);
-      const fig = h('figure', { class: `gal__f gal__f--${pos} line`, style: `--i:${2 + j};--dy:${18 + j * 8}` }, btn);
+      // Folha de uma foto: a própria imagem vira o "ar" desfocado do fundo (--foto), para ocupar a tela em qualquer proporção.
+      const amb = p.layout === 'uma' ? `;--foto:url("${f.src.replace(/["\\()]/g, '')}")` : '';
+      const fig = h('figure', { class: `gal__f gal__f--${pos} line`, style: `--i:${2 + j};--dy:${18 + j * 8}${amb}` }, btn);
       if (f.legenda) fig.append(h('figcaption', { class: 'gal__cap', text: f.legenda }));
       gal.append(fig);
     });

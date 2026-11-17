@@ -18,7 +18,7 @@ export class Abertura {
    * @param {HTMLElement} o.cover  seção da capa
    * @param {HTMLElement} o.stage  palco
    * @param {HTMLElement} o.sheet  folha 1 original (será clonada)
-   * @param {import('./paper-sound.mjs?v=202611171655').PaperSound} o.sound
+   * @param {import('./paper-sound.mjs?v=202611171705').PaperSound} o.sound
    */
   constructor({ cover, stage, sheet, sound }) {
     Object.assign(this, { cover, stage, sheet, sound });

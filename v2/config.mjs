@@ -1,7 +1,7 @@
 // Configuração pública da V2. NÃO colocar tokens ou lista de convidados aqui.
 // WhatsApp de destino: número do noivo informado e autorizado por Will em 17/11/2026 (ver DECISOES.md).
 // Vazio = o convidado escolhe o contato no próprio WhatsApp (comportamento anterior).
-import { fotosProvisorias } from './fotos.mjs?v=202611171655';
+import { fotosProvisorias } from './fotos.mjs?v=202611171705';
 
 const base = {
   casal: 'Jezriel e Beatriz',

@@ -372,3 +372,28 @@ textarea.field{min-height:200px;resize:vertical}
 #reduce[aria-pressed=true]{background:rgba(255,252,242,.9);color:var(--muted);border-color:var(--line)}
 .toolbar{justify-content:flex-end}
 .toolbar #goto-local{margin-right:auto}
+
+/* ===== Folha de foto em tela cheia (17/11/2026) =====
+   Sem moldura: a foto ocupa a folha inteira. Não é um simples cover: a própria foto, desfocada e ampliada, vira o
+   "ar" do fundo; por cima, a foto inteira (contain) com as bordas dissolvidas nesse ar. Em celular retrato quase não
+   sobra fundo; em telas largas/curtas a foto continua inteira, sem corte de rosto. Véus de papel no topo (ícones)
+   e no pé (assinatura), aproximação lenta da imagem (desligada em movimento reduzido). */
+.sheet--gal-uma .sheet__inner{padding:0!important;display:block!important;height:100%}
+.sheet--gal-uma .gal--uma{position:absolute;inset:0;width:auto;max-width:none;min-height:0;max-height:none;margin:0;display:block;height:auto}
+.stage[data-layout=wide] .sheet--gal-uma .gal--uma{height:auto;max-width:none}
+.gal--uma .gal__f--a{position:absolute;inset:0;border-radius:0;background:var(--paper);overflow:hidden;--dy:0}
+.gal--uma .gal__f--a::before{content:"";position:absolute;inset:-8%;background:var(--foto) center/cover no-repeat;filter:blur(26px) saturate(1.15) brightness(1.04);opacity:.9;transform:scale(1.1)}
+.gal--uma .gal__btn{position:absolute;inset:0}
+.gal--uma .gal__btn img{object-fit:contain;-webkit-mask-image:radial-gradient(130% 92% at 50% 50%,#000 62%,transparent 100%);mask-image:radial-gradient(130% 92% at 50% 50%,#000 62%,transparent 100%);transform:scale(1.02);transition:transform 14s cubic-bezier(.2,.4,.3,1)}
+.sheet.is-in .gal--uma .gal__btn img{transform:scale(1.07)}
+.gal--uma .gal__f--a::after{content:"";position:absolute;inset:0;pointer-events:none;background:
+  linear-gradient(to bottom,rgba(250,245,232,.78) 0,rgba(250,245,232,0) 15%),
+  linear-gradient(to top,var(--paper) 0,rgba(250,245,232,.9) 7%,rgba(250,245,232,0) 24%),
+  radial-gradient(120% 80% at 50% 45%,transparent 60%,rgba(52,70,60,.12) 100%)}
+.sheet--gal-uma .sheet__inner::after{content:"Jezriel  ·  Beatriz";position:absolute;left:0;right:0;bottom:calc(var(--u) * 30 + env(safe-area-inset-bottom,0px));z-index:2;text-align:center;font-family:var(--serif);font-style:italic;font-size:max(15px,calc(var(--u) * 17));letter-spacing:.06em;color:var(--clay-dark);pointer-events:none;opacity:0;transition:opacity .8s ease .6s}
+.sheet--gal-uma.is-in .sheet__inner::after{opacity:1}
+.sheet--gal-uma .sheet__inner::before{content:"";position:absolute;left:50%;bottom:calc(var(--u) * 58 + env(safe-area-inset-bottom,0px));z-index:2;width:calc(var(--u) * 46);height:1px;margin-left:calc(var(--u) * -23);background:var(--gold);opacity:.7;pointer-events:none}
+.reduce .gal--uma .gal__btn img,.reduce .sheet.is-in .gal--uma .gal__btn img{transform:none;transition:none}
+@media (prefers-reduced-motion:reduce){.gal--uma .gal__btn img,.sheet.is-in .gal--uma .gal__btn img{transform:none;transition:none}}
+/* Celular retrato: a foto 9:16 já preenche a largura; ela pode ocupar toda a altura (cover suave) sem perder rostos. */
+@media (orientation:portrait) and (max-aspect-ratio:10/16){.gal--uma .gal__btn img{object-fit:cover;-webkit-mask-image:linear-gradient(to bottom,#000 80%,transparent 100%);mask-image:linear-gradient(to bottom,#000 80%,transparent 100%)}}
