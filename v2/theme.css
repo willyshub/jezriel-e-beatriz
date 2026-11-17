@@ -397,3 +397,6 @@ textarea.field{min-height:200px;resize:vertical}
 @media (prefers-reduced-motion:reduce){.gal--uma .gal__btn img,.sheet.is-in .gal--uma .gal__btn img{transform:none;transition:none}}
 /* Celular retrato: a foto 9:16 já preenche a largura; ela pode ocupar toda a altura (cover suave) sem perder rostos. */
 @media (orientation:portrait) and (max-aspect-ratio:10/16){.gal--uma .gal__btn img{object-fit:cover;-webkit-mask-image:linear-gradient(to bottom,#000 80%,transparent 100%);mask-image:linear-gradient(to bottom,#000 80%,transparent 100%)}}
+/* A foto em tela cheia entra só com fade: o deslocamento padrão das linhas (--dy) a empurrava 19 px para fora da folha,
+   a medição de "não cabe" ligava o modo simples e a dobra pelo canto sumia (corrigido 17/11/2026). */
+.js .sheet--gal-uma .gal__f.line{transform:none}

@@ -1,7 +1,7 @@
 // Proteção local por senha do painel dos noivos (WebCrypto, sem dependências).
 // Não é segurança de servidor: dissuade quem apenas pega o aparelho/navegador e protege o localStorage em repouso.
 // A senha nunca é guardada; só um verificador derivado (PBKDF2-SHA-256 + sal aleatório) e a lista cifrada (AES-GCM, IV novo a cada gravação).
-import { parseBackup } from './domain.mjs?v=202611171705';
+import { parseBackup } from './domain.mjs?v=202611171710';
 
 export const ITERACOES = 250_000;
 export const SENHA_MIN = 8;

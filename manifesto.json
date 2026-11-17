@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-11-17T17:05:09.281Z",
+  "generatedAt": "2026-11-17T17:10:11.401Z",
   "files": [
     {
       "file": "index.html",
       "bytes": 7283,
-      "sha256": "65c3da8d4f0c14e49fafeb488a44b4c2fb37c025312ecb7a47d09b9d844b4590"
+      "sha256": "7328e64aa6dfaafc73a01c4c37dd21581f071376780b69bafdd2db395a11a73d"
     },
     {
       "file": "admin.html",
       "bytes": 8300,
-      "sha256": "21f794ad52432ba9494fd12d7c7ec85f4c8806eb0e9a464f0dbcf6ff32dcb119"
+      "sha256": "53490317fe35a6401fd91315631bd25b02c52fda8d8aca2a9d7412462a5a2863"
     },
     {
       "file": "style.css",
@@ -19,17 +19,17 @@
     {
       "file": "guest.mjs",
       "bytes": 9704,
-      "sha256": "f0cdd745e86160c5074524e275a49f8cf3f41de931b6cb8c0ce771f83afc18fd"
+      "sha256": "6236c899708341b79c8032c89b7a8a4d4fc558fe49400512a2fe11d75f8142d9"
     },
     {
       "file": "admin.mjs",
       "bytes": 18231,
-      "sha256": "f10bc56a81c7ef541b0c9ff652d5dd03c2d26027b129a14b2a37d4e503f83e1f"
+      "sha256": "5a1f8b90b2cb2385c8da0d3c75f9205b88f8e56ae347f84aec92b608b73cc747"
     },
     {
       "file": "admin-acesso.mjs",
       "bytes": 6034,
-      "sha256": "27f3dac65d386cb1f9c6564f6692bdc37431e7a3c649d4256a6f4605c6e18db7"
+      "sha256": "a4e3c50662a52dc2a7cf451778cc045bad29d7084ca941db1e59f9541ee2a9fa"
     },
     {
       "file": "domain.mjs",
@@ -64,22 +64,22 @@
     {
       "file": "v2/index.html",
       "bytes": 17157,
-      "sha256": "24ce79719896621f6b972a091b61df9b52e067dcdde6a7a34579e03ef9911a9e"
+      "sha256": "45f79045bcfa4a0f44e1a7686ddfd189e6fbb78d7d3223918e978d9f8e5c260e"
     },
     {
       "file": "v2/theme.css",
-      "bytes": 38220,
-      "sha256": "7c1e46ae153f85eb23620f34074538466a3e4b5b40d50b8343412498443bc43a"
+      "bytes": 38498,
+      "sha256": "80c24c066d636dece4cd68d2f3deff70aed1cddc66f36682ebfa2eced7ca1caf"
     },
     {
       "file": "v2/app.mjs",
       "bytes": 16861,
-      "sha256": "a7a95f073f9c742398c44627f90fb04defc6cf40054df3347053773a8b6aef61"
+      "sha256": "f618a2703f6f27ec0fc3b86312631f12de6425225c2b8c418089aa23cb15a959"
     },
     {
       "file": "v2/book-controller.mjs",
       "bytes": 18131,
-      "sha256": "3d1dc57cabb79d3532817b775bdf9184606405de5e06e51a2d4783755d2fc3c2"
+      "sha256": "86a3ba4f17a336bee01b589c34e774e9ca7f8aaf0a76b961961ff7115916be06"
     },
     {
       "file": "v2/motion-controller.mjs",
@@ -94,17 +94,17 @@
     {
       "file": "v2/rsvp-controller.mjs",
       "bytes": 17100,
-      "sha256": "0dacb27974bfd1d442ff3cd036dd323a41f869f4e443b5ff0c0454a50066e681"
+      "sha256": "b09ec31bb9f73a1013cd0c453c218c0fe68ec7c201541ba5c5145486179d3fd4"
     },
     {
       "file": "v2/share.mjs",
       "bytes": 4349,
-      "sha256": "bcfe3fe1432ce15eed79e4f2e497ae2ce9d41fcf78a481e1fae635256d320f9c"
+      "sha256": "da73e0d14aca61803c62d8b34764db09f5c576286699c330548bf3cfeae6f50e"
     },
     {
       "file": "v2/config.mjs",
       "bytes": 2030,
-      "sha256": "b92722bdadf85cb5d651f7f63bbf459b4129c12595f5cb3ed881b9427cd308a3"
+      "sha256": "327f435fb9d890e28bd59590b2df819fad309c6bf4be70e28f0fdfb0c6af08d7"
     },
     {
       "file": "v2/textos.mjs",
@@ -119,7 +119,7 @@
     {
       "file": "v2/abertura.mjs",
       "bytes": 9733,
-      "sha256": "2e1450bd638a0e719743696e1f5e7c06bf7cf558c94af1c38ab91b236c696536"
+      "sha256": "db510ac14eeaae0e221fd510c2825b65bb5ef655d48c70bd52c9e856d9b68d49"
     },
     {
       "file": "v2/fotos.mjs",
@@ -139,17 +139,17 @@
     {
       "file": "v2/demo/index.html",
       "bytes": 3406,
-      "sha256": "0055b42f1735e14d6cfdf11ffbe31d8c582f762dde57d65950e6217662e285f9"
+      "sha256": "42200fc17ac88fee03cf32c05a6203beca8d5455b09439969c3b1c9b5d29cf08"
     },
     {
       "file": "v2/demo/demo.mjs",
       "bytes": 4520,
-      "sha256": "8385f6a7e5121185e691665d6aac1d6b14da86f236b305dfbd502904c6d489c8"
+      "sha256": "1e167a1f5da60508e26f1e7778e464908adeef67836297c0be9381a0aa95ccc9"
     },
     {
       "file": "v2/demo/demo-lab.mjs",
       "bytes": 4629,
-      "sha256": "17244f7aff204861c920fd392c3617351e72034ebc8b48ed2d911af3385bcf8d"
+      "sha256": "21bca1e01d2e396094a491ce6c3ca879a5b1d39e6ec8450128abc40d4b4136ed"
     },
     {
       "file": "v2/assets/flores-v2-480.webp",
