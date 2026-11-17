@@ -12,9 +12,33 @@ export function montarMensagem(invite, people, { casal, dataTexto, demo = false 
   return demo ? `[TESTE] ${texto}` : texto;
 }
 
-/** Link do WhatsApp SEM destinatário (nunca inclui número). */
-export function linkWhatsApp(mensagem) {
-  return WA_GENERICO + encodeURIComponent(mensagem);
+/** Link do WhatsApp: com número configurado vai direto ao contato; sem número, o convidado escolhe o contato. */
+export function linkWhatsApp(mensagem, telefone = '') {
+  const digitos = String(telefone || '').replace(/\D/g, '');
+  const base = /^\d{10,15}$/.test(digitos) ? `https://wa.me/${digitos}?text=` : WA_GENERICO;
+  return base + encodeURIComponent(mensagem);
+}
+
+/**
+ * Código curto e sem dados pessoais para diagnosticar link com problema (vai na mensagem de resposta alternativa).
+ * Ex.: "T95" = token com 95 caracteres (um token íntegro do Gabriel tinha 96 → truncado em 1).
+ */
+export function codigoDiagnostico(href) {
+  try {
+    const t = new URL(href).searchParams.get('convite') ?? '';
+    return `T${t.length}${/^[\w-]*$/.test(t) ? '' : 'X'}`;
+  } catch { return 'U'; }
+}
+
+/** Mensagem da resposta alternativa (link inválido): nome digitado + quantidade, sem token. */
+export function mensagemAlternativa({ nome, vai, pessoas, casal, dataTexto, codigo }) {
+  const n = String(nome || '').replace(/\s+/g, ' ').trim().slice(0, 100);
+  const corpo = vai
+    ? `vou comparecer${pessoas > 1 ? `, com ${pessoas} pessoas no total (incluindo eu)` : ''}`
+    : 'não poderei comparecer';
+  return `Olá! Sou ${n}. Sobre o convite de ${casal}, em ${dataTexto}: ${corpo}.
+
+(Resposta enviada pela opção alternativa: o link do convite não abriu corretamente. Código: ${codigo}.)`;
 }
 
 /**
@@ -25,7 +49,7 @@ export function linkWhatsApp(mensagem) {
 export function lerContexto(href) {
   const url = new URL(href);
   let invite = null;
-  try { invite = readInvite(href); } catch (e) { return { modo: 'invalido', invite: null, erro: e.message }; }
+  try { invite = readInvite(href); } catch (e) { return { modo: 'invalido', invite: null, erro: e.message, codigo: codigoDiagnostico(href) }; }
   // `?convite=...&demo=1` (links gerados no laboratório/painel em modo demonstração): convite com nomes, mas ambiente de teste
   // (rascunho `jb-rsvp-v2:demo:*`, mensagens com [TESTE]).
   if (invite) return { modo: url.searchParams.get('demo') === '1' ? 'demo' : 'convite', invite: { acompanhantes: [], ...invite } };

@@ -66,7 +66,7 @@ function preencherConvite() {
   const para = $('cover-for');
   // Aviso discreto: demonstração ou link inválido. Em convite real, a capa só mostra o endereçamento no envelope.
   if (contexto.modo === 'demo') { para.textContent = nomeDemo ? `Demonstração · Para ${inv.name}` : 'Convite de demonstração'; para.classList.add('is-demo'); para.hidden = false; }
-  else if (contexto.modo === 'invalido') { para.textContent = contexto.erro; para.classList.add('is-warn'); para.hidden = false; }
+  else if (contexto.modo === 'invalido') { para.textContent = 'O link não abriu por completo, mas você pode abrir a carta e responder normalmente.'; para.classList.add('is-warn'); para.hidden = false; }
   $('cover-eyebrow').textContent = T.envelope.eyebrow;
   $('env-para').textContent = T.envelope.para;
   $('env-para').classList.toggle('is-longo', T.envelope.para.length > 26);
@@ -292,10 +292,9 @@ function agendarEspiada() {
 }
 stage.addEventListener('pointerdown', () => { clearTimeout(tEspiada); espiadas = 2; }, { capture: true });
 
-$('open-music').addEventListener('click', () => abrir({ musica: true }));
-$('open-silent').addEventListener('click', () => abrir({ musica: false }));
-$('seal').addEventListener('click', () => abrir({ musica: false }));
-$('open-local').addEventListener('click', () => abrir({ musica: false, em: LOCAL_INDEX }));
+// Abertura única pelo selo, já com música (Will, 17/11/2026). Sem faixa ou com bloqueio do navegador, abre em silêncio;
+// o botão de som da barra continua permitindo ligar/desligar.
+$('seal').addEventListener('click', () => abrir({ musica: true }));
 
 /* ---- redimensionamento e rotação preservam a folha atual ---- */
 let t = 0;

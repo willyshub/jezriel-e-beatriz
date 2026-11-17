@@ -19,7 +19,7 @@ export function readInvite(url) {
   // Limite global de 8192 para comportar o token v2 (nomes pré-definidos). Tokens v1 continuam limitados a 4096.
   if (token.length > 8192 || !/^[\w-]+$/.test(token)) throw Error('Este link de convite está incompleto ou inválido.');
   try {
-    const normalized = token.replaceAll('-', '+').replaceAll('_', '/');
+    const normalized = token.replace(/-/g, '+').replace(/_/g, '/'); // sem replaceAll: navegadores antigos
     const binary = atob(normalized + '='.repeat((4 - normalized.length % 4) % 4));
     const data = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(binary, c => c.charCodeAt(0))));
     if (data.v === 2) return validateInviteV2(data);

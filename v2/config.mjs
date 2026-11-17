@@ -1,15 +1,17 @@
-// Configuração pública da V2. NÃO colocar telefone, tokens ou lista de convidados aqui.
-// O destino do WhatsApp nunca é configurado: o convidado escolhe o contato no próprio WhatsApp.
+// Configuração pública da V2. NÃO colocar tokens ou lista de convidados aqui.
+// WhatsApp de destino: número do noivo informado e autorizado por Will em 17/11/2026 (ver DECISOES.md).
+// Vazio = o convidado escolhe o contato no próprio WhatsApp (comportamento anterior).
 import { fotosProvisorias } from './fotos.mjs';
 
 const base = {
   casal: 'Jezriel e Beatriz',
   dataTexto: '27/03/2027',
+  whatsapp: '558781324530',
   /**
-   * Trilha do convite (AAC 96 kbps, corte que já começa perto do refrão), em site/v2/audio/.
+   * Trilha instrumental do convite (Will, 17/11/2026; AAC 96 kbps, sem metadados), em site/v2/audio/.
    * Se o arquivo faltar no pacote, o convite funciona sem música ("Sem música").
    */
-  musica: { src: 'audio/musica-convite-jezriel-e-beatriz.m4a', titulo: 'Música do convite', inicioSegundos: 0, loop: true, volumeInicial: 0.5 },
+  musica: { src: 'audio/musica-convite-instrumental.m4a', titulo: 'Música do convite', inicioSegundos: 0, loop: true, volumeInicial: 0.5 },
   /**
    * Fotos da galeria (0 a 20). Cada item: { src, srcset?, alt, legenda?, foco? } (foco = object-position, ex.: '30% 20%').
    * Sem fotos, a folha de memórias não existe. Enquanto as fotos do casal não chegam, entram 3 imagens PROVISÓRIAS

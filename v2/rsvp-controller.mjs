@@ -1,14 +1,13 @@
 // Painel de resposta (RSVP) sobre o cenário, FORA do livro (sem captura de gestos de folha).
 // Nunca usa innerHTML com dados do convite/link/rascunho: tudo via textContent/atributos.
 import { validatePeople } from '../domain.mjs';
-import { montarMensagem, linkWhatsApp, chaveRascunho, lerRascunho, gravarRascunho } from './share.mjs';
+import { montarMensagem, linkWhatsApp, chaveRascunho, lerRascunho, gravarRascunho, mensagemAlternativa } from './share.mjs';
 
 const STATUS = [
   { v: 'vai', rotulo: 'Vou' },
   { v: 'nao', rotulo: 'Não vou' },
-  { v: 'pendente', rotulo: 'Ainda não sei' },
 ];
-const ROTULO_STATUS = { vai: 'Vou', nao: 'Não vou', pendente: 'Ainda não sei' };
+// "Ainda não sei" removido (Will, 17/11/2026). Rascunhos antigos com "pendente" voltam sem resposta marcada.
 
 function h(tag, attrs = {}, ...filhos) {
   const el = document.createElement(tag);
@@ -69,7 +68,7 @@ export class RsvpController {
       status: '',
     }));
     const rasc = this.#carregar();
-    this.people = rasc ? rasc.people : base;
+    this.people = rasc ? rasc.people.map((p) => ({ ...p, status: p.status === 'pendente' ? '' : p.status })) : base;
     this.waAberto = !!rasc?.wa;
     this.rascunhoEncontrado = !!rasc;
   }
@@ -90,11 +89,11 @@ export class RsvpController {
     this.root.hidden = false;
     this.stage.inert = true;
     this.#montarCabecalho();
-    if (!this.invite) this.view = 'erro-link';
+    if (!this.invite) { this.view = 'erro-link'; this.alt ??= { nome: '', vai: '', pessoas: 1 }; }
     else {
       this.view = 'form';
       this.aviso = this.waAberto
-        ? 'Você abriu o WhatsApp antes. Isso não confirma nada: confira se a mensagem foi enviada e, se precisar, ajuste a resposta abaixo.'
+        ? 'Você já abriu o WhatsApp antes com uma resposta. Se mudar algo, confirme de novo.'
         : (this.rascunhoEncontrado ? 'Encontramos um rascunho salvo neste aparelho. Você pode continuar ou editar.' : '');
     }
     this.#render();
@@ -135,16 +134,47 @@ export class RsvpController {
     this.body.replaceChildren();
     this.erroResumo = null;
     if (this.view === 'erro-link') return this.#viewErroLink();
-    if (this.view === 'review') return this.#viewRevisao();
+    if (this.view === 'enviado') return this.#viewEnviado();
     return this.#viewForm();
   }
 
+  /** Link inválido/incompleto: o convidado não fica preso. Responde digitando o nome e a quantidade, direto no WhatsApp. */
   #viewErroLink() {
-    this.titulo.textContent = 'Link do convite';
+    const a = this.alt;
+    const codigo = this.contexto.codigo || 'U';
+    this.titulo.textContent = 'Responder mesmo assim';
+    const erro = h('p', { class: 'person__error', hidden: true, role: 'alert' });
+    const nome = h('input', { type: 'text', id: 'alt-nome', class: 'field', maxlength: '100', autocomplete: 'name', autocapitalize: 'words', placeholder: 'Seu nome' });
+    nome.value = a.nome;
+    nome.addEventListener('input', () => { a.nome = nome.value; erro.hidden = true; });
+    const grupo = h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Sua resposta' });
+    const qtd = h('select', { id: 'alt-qtd', class: 'field' });
+    for (let n = 1; n <= 10; n++) qtd.append(h('option', { value: n }, n === 1 ? 'Só eu' : `${n} pessoas (incluindo eu)`));
+    qtd.value = String(a.pessoas);
+    qtd.addEventListener('change', () => { a.pessoas = Number(qtd.value); });
+    const blocoQtd = h('div', { hidden: a.vai !== 'vai' }, h('label', { class: 'field__label', for: 'alt-qtd' }, 'Quantas pessoas do seu convite vão?'), qtd);
+    for (const st of STATUS) {
+      const input = h('input', { type: 'radio', name: 'alt-st', id: `alt-${st.v}`, value: st.v });
+      input.checked = a.vai === st.v;
+      input.addEventListener('change', () => { a.vai = st.v; blocoQtd.hidden = st.v !== 'vai'; erro.hidden = true; });
+      grupo.append(h('label', { class: 'seg__opt', for: `alt-${st.v}` }, input, h('span', {}, st.rotulo)));
+    }
+    const form = h('form', { class: 'rsvp__form', novalidate: true, onsubmit: (e) => {
+      e.preventDefault();
+      const falta = !a.nome.trim() ? 'Escreva seu nome.' : !a.vai ? 'Marque se você vai ou não.' : '';
+      if (falta) { erro.textContent = falta; erro.hidden = false; (a.nome.trim() ? grupo.querySelector('input') : nome).focus(); return; }
+      const msg = mensagemAlternativa({ nome: a.nome, vai: a.vai === 'vai', pessoas: a.vai === 'vai' ? a.pessoas : 0, casal: this.config.casal, dataTexto: this.config.dataTexto, codigo });
+      this.#enviar(msg);
+    } },
+      h('fieldset', { class: 'person' }, h('legend', { class: 'person__legend' }, 'Seu nome'), nome),
+      h('fieldset', { class: 'person' }, h('legend', { class: 'person__legend' }, 'Você vai?'), grupo, blocoQtd),
+      erro,
+      h('button', { type: 'submit', class: 'btn btn--primary rsvp__submit' }, 'Confirmar no WhatsApp'),
+    );
     this.body.append(
-      h('p', { class: 'rsvp__lead' }, this.contexto.erro || 'Este link de convite está incompleto ou inválido.'),
-      h('p', { class: 'rsvp__hint' }, 'Peça o link novamente aos noivos. Você ainda pode ler o convite normalmente.'),
-      h('button', { type: 'button', class: 'btn btn--primary', onclick: () => this.close() }, 'Voltar ao convite'),
+      h('p', { class: 'rsvp__lead' }, 'O link deste convite não abriu por completo, mas você pode responder agora mesmo.'),
+      form,
+      h('p', { class: 'rsvp__hint' }, `Se preferir, peça o link novamente aos noivos. Código para os noivos: ${codigo}.`),
     );
   }
 
@@ -161,11 +191,11 @@ export class RsvpController {
     this.erroResumo = h('div', { class: 'rsvp__errors', role: 'alert', tabindex: '-1', hidden: true });
     this.body.append(this.erroResumo);
 
-    const form = h('form', { class: 'rsvp__form', novalidate: true, autocomplete: 'off', onsubmit: (e) => { e.preventDefault(); this.#revisar(); } });
+    const form = h('form', { class: 'rsvp__form', novalidate: true, autocomplete: 'off', onsubmit: (e) => { e.preventDefault(); this.#confirmar(); } });
     this.people.forEach((p, i) => form.append(this.#pessoa(p, i)));
     form.append(
-      h('button', { type: 'submit', class: 'btn btn--primary rsvp__submit' }, 'Revisar resposta'),
-      h('p', { class: 'rsvp__hint' }, 'Este site não envia nada. Você revisa a mensagem e escolhe o contato no WhatsApp.'),
+      h('button', { type: 'submit', class: 'btn btn--primary rsvp__submit' }, 'Confirmar no WhatsApp'),
+      h('p', { class: 'rsvp__hint' }, 'O WhatsApp abre com a mensagem pronta para o noivo. Toque em enviar para concluir.'),
     );
     this.body.append(form);
   }
@@ -187,10 +217,10 @@ export class RsvpController {
     fs.append(grupo);
     if (!titular) {
       const id = `nome-${i}`;
-      const nome = h('input', { type: 'text', id, class: 'field', maxlength: '100', autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', 'data-nome': i, placeholder: 'Nome de quem vai' });
+      const nome = h('input', { type: 'text', id, class: 'field', maxlength: '100', autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', 'data-nome': i, placeholder: 'Nome completo do acompanhante' });
       nome.value = p.name;
       nome.addEventListener('input', () => { this.people[i].name = nome.value; this.#limparErro(i); this.#salvar(); });
-      fs.append(h('label', { class: 'field__label', for: id }, 'Nome', h('small', {}, ' (obrigatório para quem vai)')), nome);
+      fs.append(h('label', { class: 'field__label', for: id }, `Nome do acompanhante ${i}`, h('small', {}, ' (obrigatório se for)')), nome);
     }
     fs.append(h('p', { class: 'person__error', id: `err-${i}`, hidden: true }));
     return fs;
@@ -247,54 +277,57 @@ export class RsvpController {
     return montarMensagem(this.invite, this.#normalizadas(), { casal: this.config.casal, dataTexto: this.config.dataTexto, demo: this.demo });
   }
 
-  #revisar() {
+  #confirmar() {
     const erros = this.validar();
     if (erros.length) return this.#mostrarErros(erros);
-    try { validatePeople(this.invite, this.#normalizadas()); } catch (e) {
+    let msg;
+    try { validatePeople(this.invite, this.#normalizadas()); msg = this.mensagem(); } catch (e) {
       this.erroResumo.hidden = false; this.erroResumo.textContent = e.message; this.erroResumo.focus(); return;
     }
-    this.view = 'review';
+    this.#enviar(msg);
+  }
+
+  /** Abre o WhatsApp (no próprio toque, para não ser bloqueado) e mostra a conclusão com alternativas. */
+  #enviar(msg) {
+    const url = linkWhatsApp(msg, this.config.whatsapp);
+    this.ultima = { msg, url };
+    this.waAberto = true;
     this.aviso = '';
     this.#salvar(true);
+    let janela = null;
+    try { janela = window.open(url, '_blank', 'noopener'); } catch { /* bloqueado */ }
+    this.view = 'enviado';
     this.#render();
     this.card.scrollTop = 0;
     this.titulo.focus({ preventScroll: true });
+    // Com 'noopener' alguns navegadores retornam null mesmo abrindo; por isso só navega na própria aba se a página
+    // continuar visível (nova aba/app não abriu). O rascunho já está salvo.
+    if (!janela && !window.__JB_V2_NO_NAV__) setTimeout(() => { if (!document.hidden) { try { location.href = url; } catch { /* segue a tela */ } } }, 700);
   }
 
-  /* ------------------------------------------------------------ revisão e compartilhamento */
-  #viewRevisao() {
-    this.titulo.textContent = 'Revise sua resposta';
-    const msg = this.mensagem();
-    const lista = h('ul', { class: 'review__list' });
-    this.#normalizadas().forEach((p, i) => lista.append(h('li', {},
-      h('span', { class: 'review__who' }, p.name || `Acompanhante ${i}`),
-      h('span', { class: 'review__st', 'data-status': p.status }, ROTULO_STATUS[p.status]))));
-    const total = this.people.filter((p) => p.status === 'vai').length;
+  #viewEnviado() {
+    const { msg, url } = this.ultima;
+    this.titulo.textContent = 'Falta só enviar';
     const copiaStatus = h('p', { class: 'rsvp__hint', role: 'status', id: 'copia-status' });
-    const aviso = h('p', { class: 'rsvp__notice', role: 'status', id: 'wa-aviso', hidden: !this.waAberto },
-      'Você abriu o WhatsApp, mas isso não confirma sua presença. Confira se enviou a mensagem; para mudar algo, toque em “Editar resposta”.');
-    const area = h('textarea', { class: 'field review__msg', id: 'msg', readonly: true, rows: '9' });
+    const area = h('textarea', { class: 'field review__msg', id: 'msg', readonly: true, rows: '7' });
     area.value = msg;
-    const wa = h('a', { class: 'btn btn--primary', id: 'wa-link', href: linkWhatsApp(msg), target: '_blank', rel: 'noopener noreferrer' }, 'Escolher contato no WhatsApp');
-    wa.addEventListener('click', () => { this.waAberto = true; this.#salvar(true); aviso.hidden = false; });
+    const tel = String(this.config.whatsapp || '').replace(/\D/g, '');
+    const telFmt = tel.length >= 12 ? `+${tel.slice(0, 2)} ${tel.slice(2, 4)} ${tel.slice(4, -4)}-${tel.slice(-4)}` : '';
     this.body.append(
-      h('p', { class: 'rsvp__lead' }, `Total que vai comparecer: ${total}.`),
-      lista,
-      h('p', { class: 'rsvp__lead rsvp__lead--strong' }, 'Escolha o contato do noivo ou da noiva e envie a mensagem.'),
-      wa,
+      h('p', { class: 'rsvp__lead rsvp__lead--strong' }, 'O WhatsApp foi aberto com sua mensagem. Toque em enviar lá para concluir.'),
+      h('a', { class: 'btn btn--primary', id: 'wa-link', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'Abrir o WhatsApp de novo'),
       h('button', { type: 'button', class: 'btn btn--ghost', id: 'copiar', onclick: () => this.#copiar(msg, area, copiaStatus) }, 'Copiar mensagem'),
       copiaStatus,
-      aviso,
-      h('label', { class: 'field__label', for: 'msg' }, 'Mensagem'),
+      telFmt ? h('p', { class: 'rsvp__hint' }, `Se o WhatsApp não abrir, copie a mensagem e envie para o noivo: ${telFmt}.`) : null,
+      h('label', { class: 'field__label', for: 'msg' }, 'Sua mensagem'),
       area,
-      h('button', { type: 'button', class: 'btn btn--link', id: 'editar', onclick: () => this.#editar() }, 'Editar resposta'),
-      h('p', { class: 'rsvp__hint' }, 'O WhatsApp abre com a mensagem pronta; você escolhe o contato. Os noivos registram sua resposta depois de recebê-la.'),
+      h('button', { type: 'button', class: 'btn btn--link', id: 'editar', onclick: () => this.#editar() }, 'Mudar resposta'),
     );
   }
 
   #editar() {
-    this.view = 'form';
-    this.aviso = this.waAberto ? 'Você já abriu o WhatsApp antes. Se mudar algo, envie a mensagem de novo.' : '';
+    this.view = this.invite ? 'form' : 'erro-link';
+    this.aviso = 'Se mudar algo, confirme de novo para enviar a mensagem atualizada.';
     this.#render();
     this.card.scrollTop = 0;
     this.titulo.focus({ preventScroll: true });
