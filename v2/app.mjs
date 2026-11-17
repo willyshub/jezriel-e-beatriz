@@ -1,16 +1,16 @@
 // V2 · inicialização e estado de navegação.
 // Estado: capa (envelope) -> abrindo (carta sai do envelope) -> leitura; leitura <-> resposta (painel RSVP) e foto (modo foco).
 // Música é independente. Efeitos de papel (paper-sound.mjs) seguem o controle de som.
-import { BookController, loadFlipLib } from './book-controller.mjs';
-import { MotionController } from './motion-controller.mjs';
-import { AudioController } from './audio-controller.mjs';
-import { RsvpController } from './rsvp-controller.mjs';
-import { PaperSound } from './paper-sound.mjs';
-import { Abertura, Coreografia } from './abertura.mjs';
-import { FocoFotos, montarFolhas, normalizarFotos, organizarFolhas, fotosProvisorias } from './fotos.mjs';
-import { montarTextos } from './textos.mjs';
-import { carregarConfig } from './config.mjs';
-import { lerContexto } from './share.mjs';
+import { BookController, loadFlipLib } from './book-controller.mjs?v=202611171655';
+import { MotionController } from './motion-controller.mjs?v=202611171655';
+import { AudioController } from './audio-controller.mjs?v=202611171655';
+import { RsvpController } from './rsvp-controller.mjs?v=202611171655';
+import { PaperSound } from './paper-sound.mjs?v=202611171655';
+import { Abertura, Coreografia } from './abertura.mjs?v=202611171655';
+import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611171655';
+import { montarTextos } from './textos.mjs?v=202611171655';
+import { carregarConfig } from './config.mjs?v=202611171655';
+import { lerContexto } from './share.mjs?v=202611171655';
 
 const $ = (id) => document.getElementById(id);
 const app = $('app');
@@ -38,11 +38,18 @@ if (contexto.modo === 'demo') {
 }
 const fotos = normalizarFotos(config.fotos);
 const store = $('sheet-store');
-const galFolhas = montarFolhas(fotos, T.memorias, { provisorias: !!config.fotosProvisorias });
-const ancora = $('gal-ancora');
-galFolhas.forEach((f) => store.insertBefore(f, ancora));
-// Salmos 126.5 ("semeiam em lágrimas") divide a galeria ao meio quando há 2+ folhas de memórias; senão fica antes dela.
-if (galFolhas.length >= 2) store.insertBefore(store.querySelector('.sheet--verso[data-verso=v5]'), galFolhas[Math.ceil(galFolhas.length / 2)]);
+// Ordem intercalada (pedido do noivo, 17/11/2026): versículo -> foto -> versículo -> foto ... -> Celebração.
+// Uma foto por folha. Fotos além do número de versículos seguem no fim, antes da Celebração.
+const planoGal = planoUmaPorFolha(fotos.length);
+const galFolhas = montarFolhas(fotos, T.memorias, { provisorias: !!config.fotosProvisorias, plano: planoGal, titulo: false });
+{
+  const versos = ['v3', 'v5', 'v6', 'v2'].map((v) => store.querySelector(`.sheet--verso[data-verso=${v}]`)).filter(Boolean);
+  const festa = store.querySelector('.sheet--party');
+  const seq = [];
+  versos.forEach((v, i) => { seq.push(v); if (galFolhas[i]) seq.push(galFolhas[i]); });
+  seq.push(...galFolhas.slice(versos.length));
+  seq.forEach((n) => store.insertBefore(n, festa));
+}
 store.querySelectorAll('.sheet--verso').forEach((s) => {
   const v = T.versos[s.dataset.verso];
   s.querySelector('.verso__intro').textContent = v.intro;
@@ -50,7 +57,6 @@ store.querySelectorAll('.sheet--verso').forEach((s) => {
   s.querySelector('.verso__ref').textContent = v.ref;
   s.setAttribute('aria-label', `Passagem bíblica, ${v.ref}`);
 });
-const planoGal = organizarFolhas(fotos.length);
 
 const sheets = [...store.querySelectorAll('.sheet')];
 const LOCAL_INDEX = sheets.findIndex((s) => s.dataset.title === 'Celebração');

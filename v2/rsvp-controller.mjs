@@ -1,7 +1,7 @@
 // Painel de resposta (RSVP) sobre o cenário, FORA do livro (sem captura de gestos de folha).
 // Nunca usa innerHTML com dados do convite/link/rascunho: tudo via textContent/atributos.
-import { validatePeople } from '../domain.mjs';
-import { montarMensagem, linkWhatsApp, chaveRascunho, lerRascunho, gravarRascunho, mensagemAlternativa } from './share.mjs';
+import { validatePeople } from '../domain.mjs?v=202611171655';
+import { montarMensagem, linkWhatsApp, chaveRascunho, lerRascunho, gravarRascunho, mensagemAlternativa } from './share.mjs?v=202611171655';
 
 const STATUS = [
   { v: 'vai', rotulo: 'Vou' },

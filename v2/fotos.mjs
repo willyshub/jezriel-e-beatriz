@@ -59,6 +59,12 @@ export function normalizarFotos(lista) {
   return out;
 }
 
+/** Uma foto por folha (galeria intercalada com os versículos, pedido do noivo em 17/11/2026). */
+export function planoUmaPorFolha(n) {
+  const q = Math.max(0, Math.min(MAX_FOTOS, Math.floor(n) || 0));
+  return Array.from({ length: q }, (_, i) => ({ layout: 'uma', indices: [i] }));
+}
+
 /** Quantas fotos por folha e qual layout. Retorna [{ layout, indices:number[] }]. */
 export function organizarFolhas(n) {
   const folhas = [];
@@ -94,10 +100,9 @@ function h(tag, props = {}, ...filhos) {
  * @param {{provisorias?:boolean}} o
  * @returns {HTMLElement[]}
  */
-export function montarFolhas(fotos, t, { provisorias = false } = {}) {
-  const plano = organizarFolhas(fotos.length);
+export function montarFolhas(fotos, t, { provisorias = false, plano = organizarFolhas(fotos.length), titulo = true } = {}) {
   return plano.map((p, fi) => {
-    const primeira = fi === 0;
+    const primeira = fi === 0 && titulo;
     const sheet = h('article', {
       class: `sheet sheet--memories sheet--gal-${p.layout}`,
       'data-title': 'Memórias',

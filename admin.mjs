@@ -1,5 +1,5 @@
-import { validateRow, inviteLink, inviteLinkV2, adminTotals, parseBackup, csvCell, parseNomesAcompanhantes, isDemoBackup } from './domain.mjs';
-import * as A from './admin-acesso.mjs';
+import { validateRow, inviteLink, inviteLinkV2, adminTotals, parseBackup, csvCell, parseNomesAcompanhantes, isDemoBackup } from './domain.mjs?v=202611171655';
+import * as A from './admin-acesso.mjs?v=202611171655';
 const $=s=>document.querySelector(s), esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // `?demo=1` abre o painel sobre a lista de demonstração (namespace jb-demo-v2:*), sem tocar a lista real.
 // Demo fica sem senha: só tem dados fictícios e nunca lê/escreve a lista real; a senha não protegeria nada de valor.

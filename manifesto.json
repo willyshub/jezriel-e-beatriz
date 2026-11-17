@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-11-17T16:49:17.625Z",
+  "generatedAt": "2026-11-17T16:55:47.214Z",
   "files": [
     {
       "file": "index.html",
-      "bytes": 7268,
-      "sha256": "50ec00b6209ae42dc2ab7dc914dc5efdf64edfc92e31a435f0a24669eeb65aea"
+      "bytes": 7283,
+      "sha256": "fcff00dfda2fab80706acb302fb9d7a7dc4024144845c6778aaad295ea381a6f"
     },
     {
       "file": "admin.html",
-      "bytes": 8285,
-      "sha256": "3eb2f897074e63b0061a1f2cb88c86b392aaaf60cb5cc8bdd5e8c1fc5dc01f22"
+      "bytes": 8300,
+      "sha256": "ccfd3bf72f1a6a735b7424ab0987cb01ca09c32820442e6533e3d49417765aeb"
     },
     {
       "file": "style.css",
@@ -18,18 +18,18 @@
     },
     {
       "file": "guest.mjs",
-      "bytes": 9674,
-      "sha256": "7048250b1364ed4f010004228ec563799da7c13300cec46eaa889dc8fd7dd937"
+      "bytes": 9704,
+      "sha256": "28ab90f044410a9a296266ac16d91cbabb3d3b94b15c90010a70feb78be4d3d3"
     },
     {
       "file": "admin.mjs",
-      "bytes": 18201,
-      "sha256": "19f46b5aa30fe33bec5635ded3b04f721f7e12b2b90da174ce06c3f4d6fbc486"
+      "bytes": 18231,
+      "sha256": "09057fe41a5d98b4b8e6fbe91c2ceba468b6ce5a9100ea24f483b843d40d0638"
     },
     {
       "file": "admin-acesso.mjs",
-      "bytes": 6019,
-      "sha256": "cef442b5671063ecab33ee65db1559f81a998dd50aadcdd471ff4513f9946327"
+      "bytes": 6034,
+      "sha256": "20066ce2ba90722309087ec0140181912ad8baf0476eeaa398272e0b6f65d903"
     },
     {
       "file": "domain.mjs",
@@ -63,23 +63,23 @@
     },
     {
       "file": "v2/index.html",
-      "bytes": 17142,
-      "sha256": "83fe682858b58f38779f3c4cfcfa83e041a6719d5dd00f9a0abc0d588b3b3ab1"
+      "bytes": 17157,
+      "sha256": "501c8fd9bd4dc1c92bdbf3bbb28346dcf8c27cbb4ba476711c971be38bd71e97"
     },
     {
       "file": "v2/theme.css",
-      "bytes": 34993,
-      "sha256": "3604ce81cb3f5f1aa62dbbbbd8239f58367344884adcc5b4c3b2ec6a234e3257"
+      "bytes": 35066,
+      "sha256": "2d51bcbb9b9250b52ceefaa529799ab2359d6b3eb2b4922305e4c2c2087cec43"
     },
     {
       "file": "v2/app.mjs",
-      "bytes": 16434,
-      "sha256": "cb7756555f4dcc685b17cf7dc43c448f580b5f64abed132053091cf776da9349"
+      "bytes": 16861,
+      "sha256": "ac0065f0772e6b14d578cd130eee3f0259e91e4f3fff07914dbf17c5e8214fae"
     },
     {
       "file": "v2/book-controller.mjs",
-      "bytes": 18116,
-      "sha256": "7f570437190846d9dbed5c4beafac7199b93f455bca21fb3db32b276a77163ff"
+      "bytes": 18131,
+      "sha256": "f534e3c3e111582b35fec601110a24293ddb54670e552591460fc7b494dbb1f9"
     },
     {
       "file": "v2/motion-controller.mjs",
@@ -93,18 +93,18 @@
     },
     {
       "file": "v2/rsvp-controller.mjs",
-      "bytes": 17070,
-      "sha256": "5472d59932e2dde8bb3bde4a3460b3542e81359fcb1e50a683d22157cbd1f46d"
+      "bytes": 17100,
+      "sha256": "fab1a0b3e9d70890ca4b8b78bbc7d50b5ffaecfea70dc396a7191927e66fafec"
     },
     {
       "file": "v2/share.mjs",
-      "bytes": 4334,
-      "sha256": "be7308b92d4f3adb25f8295f4d538706727d2b4f9a2009fc80243343ab648fc6"
+      "bytes": 4349,
+      "sha256": "517039b32f6713468be6f83e311e73134adef8c0c2473563c3d15d888bee0fbb"
     },
     {
       "file": "v2/config.mjs",
-      "bytes": 1989,
-      "sha256": "490ec419dcb5abf783f7d24d8bd018ff1f34456540ac9687ff760bda516f5fa2"
+      "bytes": 2030,
+      "sha256": "11343e2449de02bba44b9588a894c36232df02a9a3db7dfc3cf8f3beef044d66"
     },
     {
       "file": "v2/textos.mjs",
@@ -118,13 +118,13 @@
     },
     {
       "file": "v2/abertura.mjs",
-      "bytes": 9718,
-      "sha256": "593953374f9a61b5afb8427dbea1bc037629d937add15c7076c5ca9638335b49"
+      "bytes": 9733,
+      "sha256": "a354e3b6570c414160c086d57db8fdeca8b357a2eb460637e57d085cf7bb4d9c"
     },
     {
       "file": "v2/fotos.mjs",
-      "bytes": 11853,
-      "sha256": "dabe6895b8fa1111069fec9f40be11e27cf27ba8fa8af2d09a37fd3840f028f5"
+      "bytes": 12157,
+      "sha256": "4b672bcdf9d2ad7f2bad3ba841633f1e029079a3054feed8213cebee9ee3b244"
     },
     {
       "file": "v2/vendor/page-flip.browser.js",
@@ -138,18 +138,18 @@
     },
     {
       "file": "v2/demo/index.html",
-      "bytes": 3391,
-      "sha256": "13f4b0e958f86d6612c2fdf7a696628e4a051d5aa2efffec2deda216232ade65"
+      "bytes": 3406,
+      "sha256": "d7aebd6ddbfd2cf2c543cf301797ee061394fde616d2d97a9440b0a79eba2208"
     },
     {
       "file": "v2/demo/demo.mjs",
-      "bytes": 4490,
-      "sha256": "07d485a93503589355a3a30c69f2d52ae0c2500d1a91d1a24d94e5baf69609d8"
+      "bytes": 4520,
+      "sha256": "2a6ce1e2bd984b63beed236da3803b0e35b998360638a3f3358a8a5c280690af"
     },
     {
       "file": "v2/demo/demo-lab.mjs",
-      "bytes": 4614,
-      "sha256": "84cfcef578e26c366d7a81dfc42ac07c613af41482c0a181eda69f386b33a932"
+      "bytes": 4629,
+      "sha256": "acd210cf4393baeba137879f2b8d2e39cc20156f7087242bcb15e88887966f26"
     },
     {
       "file": "v2/assets/flores-v2-480.webp",
