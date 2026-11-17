@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-11-17T17:10:11.401Z",
+  "generatedAt": "2026-11-17T17:10:58.172Z",
   "files": [
     {
       "file": "index.html",
-      "bytes": 7283,
-      "sha256": "7328e64aa6dfaafc73a01c4c37dd21581f071376780b69bafdd2db395a11a73d"
+      "bytes": 7298,
+      "sha256": "8d7369d3833a7a4b3a6f306583d5937833e1347a155a45e639989ff283fd80af"
     },
     {
       "file": "admin.html",
-      "bytes": 8300,
-      "sha256": "53490317fe35a6401fd91315631bd25b02c52fda8d8aca2a9d7412462a5a2863"
+      "bytes": 8315,
+      "sha256": "2d53f8cddd49f50ec98c5654bf87ce9696afd5980fcdb6865e738884facd2f0e"
     },
     {
       "file": "style.css",
@@ -63,8 +63,8 @@
     },
     {
       "file": "v2/index.html",
-      "bytes": 17157,
-      "sha256": "45f79045bcfa4a0f44e1a7686ddfd189e6fbb78d7d3223918e978d9f8e5c260e"
+      "bytes": 17172,
+      "sha256": "5ff9b8eb23668ebd4bd7eda731aba32a7b4ceb8285ca639f5b3651c371ea5ada"
     },
     {
       "file": "v2/theme.css",
