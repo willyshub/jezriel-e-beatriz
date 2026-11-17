@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T16:47:30.375Z",
+  "generatedAt": "2026-11-17T16:49:17.625Z",
   "files": [
     {
       "file": "index.html",
@@ -68,8 +68,8 @@
     },
     {
       "file": "v2/theme.css",
-      "bytes": 34502,
-      "sha256": "bc8df507a62e2caa89b8667d490bea64a07e56d8893a347bda66d6928c3f6d7e"
+      "bytes": 34993,
+      "sha256": "3604ce81cb3f5f1aa62dbbbbd8239f58367344884adcc5b4c3b2ec6a234e3257"
     },
     {
       "file": "v2/app.mjs",
