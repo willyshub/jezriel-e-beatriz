@@ -180,7 +180,7 @@ export class BookController {
    * @param {HTMLElement} o.host onde o livro é montado
    * @param {HTMLElement[]} o.sheets folhas (nós do DOM, movidos entre motores)
    * @param {HTMLElement} o.measure contêiner invisível para medir se o conteúdo cabe
-   * @param {import('./motion-controller.mjs?v=202611171710').MotionController} o.motion
+   * @param {import('./motion-controller.mjs?v=202611190402').MotionController} o.motion
    * @param {(i:number)=>void} o.onChange folha atual mudou (após a virada)
    * @param {(info:object)=>void} [o.onMode] motor/estado mudou
    * @param {(state:string)=>void} [o.onState] estado da dobra mudou

@@ -1,5 +1,5 @@
 // Mensagem e links de compartilhamento do RSVP. Sem número de telefone: o WhatsApp apresenta os contatos.
-import { rsvpMessage, readInvite } from '../domain.mjs?v=202611171710';
+import { rsvpMessage, readInvite } from '../domain.mjs?v=202611190402';
 
 export const WA_GENERICO = 'https://wa.me/?text=';
 export const MAX_DEMO = 20;

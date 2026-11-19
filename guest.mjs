@@ -1,5 +1,5 @@
-import { readInvite, validatePeople, rsvpMessage, whatsappLink } from './domain.mjs?v=202611171710';
-import { InvitationSound } from './sound.mjs?v=202611171710';
+import { readInvite, validatePeople, rsvpMessage, whatsappLink } from './domain.mjs?v=202611190402';
+import { InvitationSound } from './sound.mjs?v=202611190402';
 const $=s=>document.querySelector(s), esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fallback={casal:{noiva:'Beatriz',noivo:''},evento:{data:'2027-03-27'},whatsapp:{numero:'',modo:'teste'},confirmacao:{},fotos:[],som:{oferecer:true}};
 let config=fallback, invite=null, chapter=0, opening=false, generation=0, message='';

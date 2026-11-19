@@ -1,16 +1,16 @@
 // V2 · inicialização e estado de navegação.
 // Estado: capa (envelope) -> abrindo (carta sai do envelope) -> leitura; leitura <-> resposta (painel RSVP) e foto (modo foco).
 // Música é independente. Efeitos de papel (paper-sound.mjs) seguem o controle de som.
-import { BookController, loadFlipLib } from './book-controller.mjs?v=202611171710';
-import { MotionController } from './motion-controller.mjs?v=202611171710';
-import { AudioController } from './audio-controller.mjs?v=202611171710';
-import { RsvpController } from './rsvp-controller.mjs?v=202611171710';
-import { PaperSound } from './paper-sound.mjs?v=202611171710';
-import { Abertura, Coreografia } from './abertura.mjs?v=202611171710';
-import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611171710';
-import { montarTextos } from './textos.mjs?v=202611171710';
-import { carregarConfig } from './config.mjs?v=202611171710';
-import { lerContexto } from './share.mjs?v=202611171710';
+import { BookController, loadFlipLib } from './book-controller.mjs?v=202611190402';
+import { MotionController } from './motion-controller.mjs?v=202611190402';
+import { AudioController } from './audio-controller.mjs?v=202611190402';
+import { RsvpController } from './rsvp-controller.mjs?v=202611190402';
+import { PaperSound } from './paper-sound.mjs?v=202611190402';
+import { Abertura, Coreografia } from './abertura.mjs?v=202611190402';
+import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611190402';
+import { montarTextos } from './textos.mjs?v=202611190402';
+import { carregarConfig } from './config.mjs?v=202611190402';
+import { lerContexto } from './share.mjs?v=202611190402';
 
 const $ = (id) => document.getElementById(id);
 const app = $('app');

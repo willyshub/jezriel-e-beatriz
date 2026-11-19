@@ -86,7 +86,9 @@ export function validateRow(row) {
   if (row.status === 'confirmado' && row.confirmed === 0) throw Error('Um convite confirmado precisa de pelo menos uma pessoa.');
   // `acompanhantes` é opcional (nomes pré-definidos para o link V2); linhas antigas continuam idênticas.
   const names = row.acompanhantes === undefined ? null : validateInviteV2(row).acompanhantes;
-  return {...invite, ...(names?.length ? { acompanhantes: names } : {}), status: row.status, confirmed: row.confirmed};
+  // `enviado` é opcional (marcação manual dos noivos: o link já foi mandado ao convidado). Ausente = não enviado.
+  if (row.enviado !== undefined && typeof row.enviado !== 'boolean') throw Error('Marcação de link enviado inválida.');
+  return {...invite, ...(names?.length ? { acompanhantes: names } : {}), status: row.status, confirmed: row.confirmed, ...(row.enviado ? { enviado: true } : {})};
 }
 export function adminTotals(rows) {
   return rows.reduce((total, raw) => {
