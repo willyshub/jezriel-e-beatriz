@@ -1,7 +1,7 @@
 // Painel de resposta (RSVP) sobre o cenário, FORA do livro (sem captura de gestos de folha).
 // Nunca usa innerHTML com dados do convite/link/rascunho: tudo via textContent/atributos.
-import { validatePeople } from '../domain.mjs?v=202611190402';
-import { montarMensagem, linkWhatsApp, chaveRascunho, lerRascunho, gravarRascunho, mensagemAlternativa } from './share.mjs?v=202611190402';
+import { validatePeople } from '../domain.mjs?v=202611200440';
+import { montarMensagem, linkWhatsApp, chaveRascunho, lerRascunho, gravarRascunho, mensagemAlternativa } from './share.mjs?v=202611200440';
 
 const STATUS = [
   { v: 'vai', rotulo: 'Vou' },
@@ -125,8 +125,8 @@ export class RsvpController {
   }
 
   #montarCabecalho() {
-    this.badge.textContent = this.demo ? 'Convite de demonstração' : 'Responder ao convite';
-    this.badge.classList.toggle('is-demo', this.demo);
+    // Produção (20/11/2026): nenhuma indicação de demonstração na tela; o teste se distingue só pelo [TESTE] da mensagem.
+    this.badge.textContent = 'Responder ao convite';
   }
 
   /* ------------------------------------------------------------ renderização */
@@ -142,7 +142,8 @@ export class RsvpController {
   #viewErroLink() {
     const a = this.alt;
     const codigo = this.contexto.codigo || 'U';
-    this.titulo.textContent = 'Responder mesmo assim';
+    const geral = this.contexto.modo === 'geral';
+    this.titulo.textContent = geral ? 'Confirmar presença' : 'Responder mesmo assim';
     const erro = h('p', { class: 'person__error', hidden: true, role: 'alert' });
     const nome = h('input', { type: 'text', id: 'alt-nome', class: 'field', maxlength: '100', autocomplete: 'name', autocapitalize: 'words', placeholder: 'Seu nome' });
     nome.value = a.nome;
@@ -163,7 +164,7 @@ export class RsvpController {
       e.preventDefault();
       const falta = !a.nome.trim() ? 'Escreva seu nome.' : !a.vai ? 'Marque se você vai ou não.' : '';
       if (falta) { erro.textContent = falta; erro.hidden = false; (a.nome.trim() ? grupo.querySelector('input') : nome).focus(); return; }
-      const msg = mensagemAlternativa({ nome: a.nome, vai: a.vai === 'vai', pessoas: a.vai === 'vai' ? a.pessoas : 0, casal: this.config.casal, dataTexto: this.config.dataTexto, codigo });
+      const msg = mensagemAlternativa({ nome: a.nome, vai: a.vai === 'vai', pessoas: a.vai === 'vai' ? a.pessoas : 0, casal: this.config.casal, dataTexto: this.config.dataTexto, codigo, geral });
       this.#enviar(msg);
     } },
       h('fieldset', { class: 'person' }, h('legend', { class: 'person__legend' }, 'Seu nome'), nome),
@@ -172,20 +173,21 @@ export class RsvpController {
       h('button', { type: 'submit', class: 'btn btn--primary rsvp__submit' }, 'Confirmar no WhatsApp'),
     );
     this.body.append(
-      h('p', { class: 'rsvp__lead' }, 'O link deste convite não abriu por completo, mas você pode responder agora mesmo.'),
+      h('p', { class: 'rsvp__lead' }, geral
+        ? 'Conte para a gente quem vem. A resposta chega direto no nosso WhatsApp.'
+        : 'O link deste convite não abriu por completo, mas você pode responder agora mesmo.'),
       form,
-      h('p', { class: 'rsvp__hint' }, `Se preferir, peça o link novamente aos noivos. Código para os noivos: ${codigo}.`),
     );
+    if (!geral) this.body.append(h('p', { class: 'rsvp__hint' }, `Se preferir, peça o link novamente aos noivos. Código para os noivos: ${codigo}.`));
   }
 
   #viewForm() {
     const inv = this.invite;
     this.titulo.textContent = 'Confirmar presença';
-    const vagas = inv.capacity === 1 ? '1 pessoa' : `até ${inv.capacity} pessoas`;
     this.body.append(
-      h('p', { class: 'rsvp__lead' }, this.demo
-        ? `Convite de demonstração, com ${vagas}. As mensagens levam o prefixo [TESTE].`
-        : `Convite de ${inv.name}, para ${vagas}, incluindo você.`),
+      h('p', { class: 'rsvp__lead' }, inv.capacity === 1
+        ? 'Este convite é para você. Marque sua resposta.'
+        : `Este convite é para até ${inv.capacity} pessoas, incluindo você. Marque quem vai.`),
     );
     if (this.aviso) this.body.append(h('p', { class: 'rsvp__notice', role: 'status' }, this.aviso));
     this.erroResumo = h('div', { class: 'rsvp__errors', role: 'alert', tabindex: '-1', hidden: true });
@@ -195,7 +197,7 @@ export class RsvpController {
     this.people.forEach((p, i) => form.append(this.#pessoa(p, i)));
     form.append(
       h('button', { type: 'submit', class: 'btn btn--primary rsvp__submit' }, 'Confirmar no WhatsApp'),
-      h('p', { class: 'rsvp__hint' }, 'O WhatsApp abre com a mensagem pronta para o noivo. Toque em enviar para concluir.'),
+      h('p', { class: 'rsvp__hint' }, 'O WhatsApp abre com a mensagem pronta. É só tocar em enviar.'),
     );
     this.body.append(form);
   }

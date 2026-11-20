@@ -1,6 +1,6 @@
 // Interface do laboratório V2 (dados fictícios). Textos entram via textContent.
-import { adminTotals } from '../../domain.mjs?v=202611190402';
-import { cenarios, linkCenario, semearDemo, resumoLimpeza, exportarDemo, reiniciarDemo, CHAVE_LISTA_DEMO } from './demo-lab.mjs?v=202611190402';
+import { adminTotals } from '../../domain.mjs?v=202611200440';
+import { cenarios, linkCenario, semearDemo, resumoLimpeza, exportarDemo, reiniciarDemo, CHAVE_LISTA_DEMO } from './demo-lab.mjs?v=202611200440';
 
 const $ = (id) => document.getElementById(id);
 let storage = null;

@@ -18,7 +18,7 @@ export class Abertura {
    * @param {HTMLElement} o.cover  seção da capa
    * @param {HTMLElement} o.stage  palco
    * @param {HTMLElement} o.sheet  folha 1 original (será clonada)
-   * @param {import('./paper-sound.mjs?v=202611190402').PaperSound} o.sound
+   * @param {import('./paper-sound.mjs?v=202611200440').PaperSound} o.sound
    */
   constructor({ cover, stage, sheet, sound }) {
     Object.assign(this, { cover, stage, sheet, sound });
@@ -43,7 +43,7 @@ export class Abertura {
 
     // carta = clone da folha 1, no tamanho do palco
     const letter = this.sheet.cloneNode(true);
-    letter.classList.remove('stf__item', 'is-current', 'is-in');
+    letter.classList.remove('leaf', 'is-current', 'is-next', 'is-under', 'is-turning', 'is-in');
     letter.classList.add('letter');
     if (!coreo) letter.classList.add('is-in', 'no-trans');
     letter.removeAttribute('style');

@@ -1,16 +1,18 @@
 // V2 · inicialização e estado de navegação.
 // Estado: capa (envelope) -> abrindo (carta sai do envelope) -> leitura; leitura <-> resposta (painel RSVP) e foto (modo foco).
 // Música é independente. Efeitos de papel (paper-sound.mjs) seguem o controle de som.
-import { BookController, loadFlipLib } from './book-controller.mjs?v=202611190402';
-import { MotionController } from './motion-controller.mjs?v=202611190402';
-import { AudioController } from './audio-controller.mjs?v=202611190402';
-import { RsvpController } from './rsvp-controller.mjs?v=202611190402';
-import { PaperSound } from './paper-sound.mjs?v=202611190402';
-import { Abertura, Coreografia } from './abertura.mjs?v=202611190402';
-import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611190402';
-import { montarTextos } from './textos.mjs?v=202611190402';
-import { carregarConfig } from './config.mjs?v=202611190402';
-import { lerContexto } from './share.mjs?v=202611190402';
+import { BookController } from './book-controller.mjs?v=202611200440';
+import { MotionController } from './motion-controller.mjs?v=202611200440';
+import { AudioController } from './audio-controller.mjs?v=202611200440';
+import { RsvpController } from './rsvp-controller.mjs?v=202611200440';
+import { PaperSound } from './paper-sound.mjs?v=202611200440';
+import { Abertura, Coreografia } from './abertura.mjs?v=202611200440';
+import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611200440';
+import { montarTextos } from './textos.mjs?v=202611200440';
+import { carregarConfig } from './config.mjs?v=202611200440';
+import { lerContexto, linkWhatsApp } from './share.mjs?v=202611200440';
+import { PresentesController, montarFolhaPresentes, normalizarPresentes } from './presentes.mjs?v=202611200440';
+import { PRESENTES } from './presentes-dados.mjs?v=202611200440';
 
 const $ = (id) => document.getElementById(id);
 const app = $('app');
@@ -58,6 +60,11 @@ store.querySelectorAll('.sheet--verso').forEach((s) => {
   s.setAttribute('aria-label', `Passagem bíblica, ${v.ref}`);
 });
 
+// Lista de presentes: folha logo depois da Celebração (some se a lista estiver vazia).
+const presentes = normalizarPresentes(config.presentes ?? PRESENTES);
+const folhaPresentes = montarFolhaPresentes(presentes, T.presentes);
+if (folhaPresentes) store.querySelector('.sheet--party').after(folhaPresentes);
+
 const sheets = [...store.querySelectorAll('.sheet')];
 const LOCAL_INDEX = sheets.findIndex((s) => s.dataset.title === 'Celebração');
 
@@ -70,9 +77,8 @@ function titulo(el, [a, b]) {
 }
 function preencherConvite() {
   const para = $('cover-for');
-  // Aviso discreto: demonstração ou link inválido. Em convite real, a capa só mostra o endereçamento no envelope.
-  if (contexto.modo === 'demo') { para.textContent = nomeDemo ? `Demonstração · Para ${inv.name}` : 'Convite de demonstração'; para.classList.add('is-demo'); para.hidden = false; }
-  else if (contexto.modo === 'invalido') { para.textContent = 'O link não abriu por completo, mas você pode abrir a carta e responder normalmente.'; para.classList.add('is-warn'); para.hidden = false; }
+  // Produção (20/11/2026): sem rótulo de demonstração. Só o link inválido ganha um aviso discreto na capa.
+  if (contexto.modo === 'invalido') { para.textContent = 'O link não abriu por completo, mas você pode abrir a carta e responder normalmente.'; para.classList.add('is-warn'); para.hidden = false; }
   $('cover-eyebrow').textContent = T.envelope.eyebrow;
   $('env-para').textContent = T.envelope.para;
   $('env-para').classList.toggle('is-longo', T.envelope.para.length > 26);
@@ -90,7 +96,7 @@ function preencherConvite() {
   fim.querySelector('.rsvp-cta__title').classList.toggle('is-longo', T.pers);
   fim.querySelector('.rsvp-cta__text').textContent = T.final.texto;
   const quem = fim.querySelector('[data-fill=para]');
-  quem.textContent = inv ? `${contexto.modo === 'demo' ? 'Demonstração · ' : ''}${T.final.quem(inv.capacity)}` : '';
+  quem.textContent = inv ? T.final.quem(inv.capacity) : '';
   quem.hidden = !quem.textContent;
   syncRascunho();
 }
@@ -191,6 +197,15 @@ prev.addEventListener('click', () => book.prev('botao'));
 next.addEventListener('click', () => { esconderDica(true); book.next('botao'); });
 $('goto-local').addEventListener('click', () => book.goTo(LOCAL_INDEX, 'botao'));
 
+const giftsPanel = folhaPresentes
+  ? new PresentesController({ root: $('presentes'), stage, itens: presentes, t: T.presentes, whatsapp: config.whatsapp, linkWhatsApp, reduced: () => motion.reduced })
+  : null;
+folhaPresentes?.querySelector('.gifts-open').addEventListener('click', (e) => giftsPanel.open(e.currentTarget));
+const GIFTS_INDEX = folhaPresentes ? sheets.indexOf(folhaPresentes) : -1;
+$('goto-gifts').hidden = !folhaPresentes;
+if (!folhaPresentes) $('goto-local').style.marginRight = 'auto';
+$('goto-gifts').addEventListener('click', () => book.goTo(GIFTS_INDEX, 'botao'));
+
 sheets.forEach((s) => s.querySelectorAll('.rsvp-open').forEach((b) => b.addEventListener('click', () => rsvp.open(b))));
 document.addEventListener('jb:rsvp', (e) => { if (!e.detail.aberto) syncRascunho(); });
 
@@ -221,7 +236,7 @@ motion.onChange(syncReduceBtn);
 syncReduceBtn();
 
 document.addEventListener('keydown', (e) => {
-  if (stage.dataset.state !== 'reading' || rsvp.aberto || foco.aberto || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (stage.dataset.state !== 'reading' || rsvp.aberto || foco.aberto || giftsPanel?.aberto || e.altKey || e.ctrlKey || e.metaKey) return;
   if (e.target.closest?.('input,textarea,select')) return;
   if (e.key === 'ArrowRight') { e.preventDefault(); book.next('teclado'); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); book.prev('teclado'); }
@@ -259,7 +274,6 @@ async function abrir({ musica = false, em = 0 } = {}) {
     if (comCoreo) rev.dataset.coreo = '1';
     else rev.classList.add('is-in', 'no-trans');   // a carta e a folha 1 já nascem iguais e reveladas
     const fim = abertura.tocar({ coreo: comCoreo });
-    loadFlipLib().catch(() => {});                  // a biblioteca carrega em paralelo à animação
     await fim;
   }
   await book.open(cena ? 0 : em);
@@ -313,7 +327,7 @@ ro.observe(stage);
 aplicarEscala();
 syncSound();
 
-/* ---- pré-carregamento com a página ociosa (envelope parado): biblioteca, imagens da 1ª/2ª folha e metadados da música ---- */
+/* ---- pré-carregamento com a página ociosa (envelope parado): imagens da 1ª/2ª folha e metadados da música ---- */
 function ocioso(fn) { (window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 3000 }) : (f) => setTimeout(f, 1500))(fn); }
 function precarregarImagens() {
   for (const img of [...sheets[0].querySelectorAll('img'), ...(sheets[1]?.querySelectorAll('img') ?? [])]) {
@@ -325,11 +339,10 @@ function precarregarImagens() {
 }
 function aoOciar() {
   if (stage.dataset.state !== 'cover') return;
-  loadFlipLib().catch(() => {});
   precarregarImagens();
   audio.prepararMetadata(); // só cabeçalho do arquivo; nada com economia de dados ou 2g
 }
 if (document.readyState === 'complete') ocioso(aoOciar); else window.addEventListener('load', () => ocioso(aoOciar), { once: true });
 
 // Gancho de QA (somente leitura) para os testes automatizados.
-window.__v2 = { book, motion, audio, rsvp, paper, foco, abertura, contexto, textos: T, fotos, get index() { return book.index; } };
+window.__v2 = { book, presentes: giftsPanel, motion, audio, rsvp, paper, foco, abertura, contexto, textos: T, fotos, get index() { return book.index; } };

@@ -1,5 +1,5 @@
 // Mensagem e links de compartilhamento do RSVP. Sem número de telefone: o WhatsApp apresenta os contatos.
-import { rsvpMessage, readInvite } from '../domain.mjs?v=202611190402';
+import { rsvpMessage, readInvite } from '../domain.mjs?v=202611200440';
 
 export const WA_GENERICO = 'https://wa.me/?text=';
 export const MAX_DEMO = 20;
@@ -30,21 +30,25 @@ export function codigoDiagnostico(href) {
   } catch { return 'U'; }
 }
 
-/** Mensagem da resposta alternativa (link inválido): nome digitado + quantidade, sem token. */
-export function mensagemAlternativa({ nome, vai, pessoas, casal, dataTexto, codigo }) {
+/** Mensagem da resposta sem link pessoal (link inválido ou convite geral): nome digitado + quantidade, sem token. */
+export function mensagemAlternativa({ nome, vai, pessoas, casal, dataTexto, codigo, geral = false }) {
   const n = String(nome || '').replace(/\s+/g, ' ').trim().slice(0, 100);
   const corpo = vai
     ? `vou comparecer${pessoas > 1 ? `, com ${pessoas} pessoas no total (incluindo eu)` : ''}`
     : 'não poderei comparecer';
+  const nota = geral
+    ? '(Resposta enviada pelo convite geral, sem link pessoal.)'
+    : `(Resposta enviada pela opção alternativa: o link do convite não abriu corretamente. Código: ${codigo}.)`;
   return `Olá! Sou ${n}. Sobre o convite de ${casal}, em ${dataTexto}: ${corpo}.
 
-(Resposta enviada pela opção alternativa: o link do convite não abriu corretamente. Código: ${codigo}.)`;
+${nota}`;
 }
 
 /**
- * Interpreta o endereço atual. Retorna { modo: 'convite' | 'demo' | 'invalido', invite, erro }.
- * - ?convite= (v1 ou v2)  -> convite real
- * - sem convite            -> convite de demonstração (?demo=N define 1..20 vagas; padrão 3)
+ * Interpreta o endereço atual. Retorna { modo: 'convite' | 'demo' | 'geral' | 'invalido', invite, erro }.
+ * - ?convite= (v1 ou v2)  -> convite pessoal
+ * - ?demo=N (sem convite)  -> convite de demonstração para testes (1..20 vagas; padrão 3)
+ * - sem parâmetros         -> convite geral (produção, 20/11/2026): sem nome; a resposta pede nome e quantidade
  */
 export function lerContexto(href) {
   const url = new URL(href);
@@ -53,6 +57,7 @@ export function lerContexto(href) {
   // `?convite=...&demo=1` (links gerados no laboratório/painel em modo demonstração): convite com nomes, mas ambiente de teste
   // (rascunho `jb-rsvp-v2:demo:*`, mensagens com [TESTE]).
   if (invite) return { modo: url.searchParams.get('demo') === '1' ? 'demo' : 'convite', invite: { acompanhantes: [], ...invite } };
+  if (!url.searchParams.has('demo')) return { modo: 'geral', invite: null };
   const n = Number(url.searchParams.get('demo'));
   const capacity = Number.isInteger(n) && n >= 1 && n <= MAX_DEMO ? n : 3;
   return {
