@@ -39,20 +39,19 @@ button{font:inherit;color:inherit}
 
 /* ===== Folhas ===== */
 .sheet{background:radial-gradient(120% 70% at 12% 0,var(--paper-light) 0,rgba(255,252,242,0) 60%),var(--paper);color:var(--ink);overflow:hidden;position:relative}
+.stf__item.sheet{position:absolute}
+/* Correção do glitch da dobra (21/11/2026): a StPageFlip troca o clip-path da folha a cada quadro. Com o conteúdo numa
+   camada própria, o navegador só redesenha a máscara do recorte; fotos, máscaras e textos ficam rasterizados uma vez.
+   Só as folhas visíveis existem como camada (a biblioteca esconde as demais com display:none). */
+.stf__item.sheet>.sheet__inner{will-change:transform}
 .sheet__inner{position:relative;z-index:1;min-height:100%;display:flex;flex-direction:column;padding:calc(max(64px,var(--u) * 28) + env(safe-area-inset-top,0px)) calc(var(--u) * 24) calc(var(--u) * 78 + env(safe-area-inset-bottom,0px))}
 .eyebrow{margin:0;font-family:var(--sans);font-size:max(12px,calc(var(--u) * 12.5));letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 em{font-style:italic}
 
-/* Virada 3D pela lombada (motor próprio, 20/11/2026): só transform/opacity, pintura única por folha.
-   A folha atual já nasce em camada própria (will-change) e a seguinte fica pintada por baixo: nada é pintado no início do gesto. */
-.book3d{position:absolute;inset:0;overflow:hidden;perspective:1700px;perspective-origin:0 50%}
-.book3d .leaf{position:absolute;inset:0;visibility:hidden;transform-origin:0 50%;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.book3d .leaf.is-next{visibility:visible;z-index:0}
-.book3d .leaf.is-current,.book3d .leaf.is-under{visibility:visible;z-index:1}
-.book3d .leaf.is-current{will-change:transform}
-.book3d .leaf.is-turning{visibility:visible;z-index:3;will-change:transform;box-shadow:0 0 calc(var(--u) * 28) rgba(52,70,60,.22)}
-.under-shade{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;will-change:opacity;background:linear-gradient(90deg,rgba(52,70,60,.45) 0,rgba(52,70,60,.18) 35%,rgba(52,70,60,0) 78%)}
-.leaf-shade{position:absolute;inset:0;z-index:20;pointer-events:none;opacity:0;will-change:opacity;background:linear-gradient(90deg,rgba(52,70,60,.34) 0,rgba(52,70,60,.14) 55%,rgba(255,250,240,.12) 100%)}
+/* Verso do papel: enquanto a folha se dobra, a parte virada (o motor aplica rotate() inline) mostra marfim liso,
+   com leve fibra e luz, em vez do conteúdo espelhado. A frente, a folha de baixo e o repouso não usam rotate(). */
+.stf__item.sheet::after{content:'';position:absolute;inset:0;z-index:6;opacity:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,253,246,.85) 0,rgba(255,253,246,0) 38%),repeating-linear-gradient(115deg,rgba(167,124,61,.04) 0 1px,transparent 1px 4px),linear-gradient(165deg,#f2e9d7 0,#e8dcc6 62%,#ddd0b7 100%)}
+.stf__item.sheet[style*="rotate("]::after{opacity:1}
 
 /* Revelação */
 .reveal__flora{position:absolute;z-index:-1;top:0;left:0;width:100%;height:56%;object-fit:cover;object-position:28% 0;-webkit-mask-image:linear-gradient(#000 52%,transparent);mask-image:linear-gradient(#000 52%,transparent)}
@@ -174,7 +173,8 @@ em{font-style:italic}
 
 /* ===== Modo simples (deck): redução de efeitos, biblioteca indisponível ou conteúdo maior que a tela ===== */
 .deck{position:absolute;inset:0}
-/* O modo simples manda sobre qualquer estilo inline que tenha sobrado da virada 3D. */
+/* Correção 17/11/2026: depois de trocar de dobra para modo simples (botão de efeitos), a biblioteca StPageFlip ainda
+   escrevia estilos inline (display:none, tamanho, z-index) nas folhas, deixando páginas em branco. O modo simples manda. */
 .deck .sheet{display:block!important;left:0!important;top:0!important;right:0!important;bottom:0!important;width:auto!important;height:auto!important;z-index:auto!important;clip-path:none!important}
 .deck .sheet.is-current{z-index:1!important}
 .deck .sheet{position:absolute;inset:0;opacity:0;visibility:hidden;transform:translateX(2.5%);transition:opacity .28s ease,transform .28s ease,visibility 0s linear .28s}
@@ -391,8 +391,14 @@ textarea.field{min-height:200px;resize:vertical}
 .sheet--gal-uma .gal--uma{position:absolute;inset:0;width:auto;max-width:none;min-height:0;max-height:none;margin:0;display:block;height:auto}
 .stage[data-layout=wide] .sheet--gal-uma .gal--uma{height:auto;max-width:none}
 .gal--uma .gal__f--a{position:absolute;inset:0;border-radius:0;background:var(--paper);overflow:hidden;--dy:0}
-.gal--uma .gal__f--a::before{content:"";position:absolute;inset:-8%;background:var(--foto) center/cover no-repeat;filter:blur(26px) saturate(1.15) brightness(1.04);opacity:.9;transform:scale(1.1)}
+/* Fundo: bitmap minúsculo já desfocado em JS (fotos.mjs), ampliado pelo navegador. Sem `filter` (correção 21/11/2026:
+   o blur no CSS era repintado a cada quadro da dobra e deixava blocos vazios no Android). Até a foto carregar, fica o papel. */
+.gal--uma .gal__f--a::before{content:"";position:absolute;inset:-8%;background:var(--foto-amb,none) center/cover no-repeat;opacity:0;transform:scale(1.1);transition:opacity .5s ease}
+.gal--uma .gal__f--a.has-amb::before{opacity:.9}
 .gal--uma .gal__btn{position:absolute;inset:0}
+/* Foto não é arrastável nem selecionável: no celular, segurar/arrastar a imagem cancelava o deslize de virar a folha (21/11/2026). */
+.gal__btn{touch-action:pan-y pinch-zoom;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.gal__btn img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
 .gal--uma .gal__btn img{object-fit:contain;-webkit-mask-image:radial-gradient(130% 92% at 50% 50%,#000 62%,transparent 100%);mask-image:radial-gradient(130% 92% at 50% 50%,#000 62%,transparent 100%);transform:scale(1.02);transition:transform 14s cubic-bezier(.2,.4,.3,1)}
 .sheet.is-in .gal--uma .gal__btn img{transform:scale(1.07)}
 .gal--uma .gal__f--a::after{content:"";position:absolute;inset:0;pointer-events:none;background:
@@ -410,81 +416,20 @@ textarea.field{min-height:200px;resize:vertical}
    a medição de "não cabe" ligava o modo simples e a dobra pelo canto sumia (corrigido 17/11/2026). */
 .js .sheet--gal-uma .gal__f.line{transform:none}
 
-/* ===== Lista de presentes (20/11/2026): folha depois da Celebração + painel fora do palco =====
-   A folha é uma vitrine curta (cabe na medição); a lista completa fica no painel, que rola. */
+/* ===== Lista de presentes (link externo desde 21/11/2026): folha depois da Celebração com botão para o site da lista ===== */
 .toolbar #goto-local{margin-right:0}
 .toolbar #goto-gifts{margin-right:auto}
 .sheet--gifts{background:radial-gradient(110% 60% at 85% 100%,rgba(227,191,187,.28),rgba(227,191,187,0) 70%),radial-gradient(120% 70% at 12% 0,var(--paper-light) 0,rgba(255,252,242,0) 60%),var(--paper)}
 .sheet--gifts .sheet__inner{justify-content:center}
-.gifts__orn{display:block;width:calc(var(--u) * 34);height:calc(var(--u) * 34);margin-bottom:calc(var(--u) * 10);color:var(--gold)}
-.gifts__orn .gift__ph{width:100%;height:100%}
+.gifts__orn{display:block;width:calc(var(--u) * 40);height:calc(var(--u) * 40);margin-bottom:calc(var(--u) * 12);color:var(--gold)}
+.gift__ph{width:100%;height:100%;fill:none;stroke:var(--gold);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
 .gifts__title{margin:calc(var(--u) * 6) 0 0;font-weight:400;font-size:calc(var(--u) * 36);line-height:1.05}
 .gifts__title em{color:var(--clay)}
-.gifts__text{margin:calc(var(--u) * 10) 0 0;max-width:calc(var(--u) * 300);font-size:max(15px,calc(var(--u) * 16));line-height:1.42;color:var(--muted)}
-.gifts__mini{list-style:none;margin:calc(var(--u) * 18) 0 calc(var(--u) * 6);padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u) * 8)}
-.gift-mini{min-width:0;padding:calc(var(--u) * 5);background:#fff;border:1px solid var(--line);border-radius:calc(var(--u) * 10);box-shadow:0 calc(var(--u) * 4) calc(var(--u) * 12) rgba(52,70,60,.08)}
-.gift-mini:nth-child(2){transform:translateY(calc(var(--u) * -6))}
-.gift-mini .gift__img{border-radius:calc(var(--u) * 7)}
-.gift-mini__nome{margin:calc(var(--u) * 6) 0 0;font-family:var(--sans);font-size:max(11px,calc(var(--u) * 11.5));line-height:1.25;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em}
-.gift-mini__preco{margin:calc(var(--u) * 3) 0 0;font-family:var(--sans);font-size:max(11px,calc(var(--u) * 12));font-weight:600;color:var(--clay-dark)}
-.sheet--gifts .btn{margin-top:calc(var(--u) * 8);padding:0 calc(var(--u) * 24)}
-.gifts__nota{margin:calc(var(--u) * 6) 0 0;font-family:var(--sans);font-size:max(12px,calc(var(--u) * 12));color:var(--muted)}
+.gifts__text{margin:calc(var(--u) * 12) 0 0;max-width:calc(var(--u) * 300);font-size:max(15px,calc(var(--u) * 16));line-height:1.42;color:var(--muted)}
+.sheet--gifts .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4em;margin-top:calc(var(--u) * 22);padding:0 calc(var(--u) * 26);text-decoration:none}
+.sheet--gifts .btn.is-off{background:transparent;color:var(--muted);border-style:dashed;border-color:var(--line);cursor:default}
+.gifts__nota{margin:calc(var(--u) * 10) 0 0;font-family:var(--sans);font-size:max(12px,calc(var(--u) * 12.5));color:var(--muted)}
 .stage[data-layout=wide] .sheet--gifts .sheet__inner{padding-left:calc(var(--u) * 80)}
 .stage[data-layout=wide] .gifts__orn{display:none}
 .stage[data-layout=wide] .gifts__title{font-size:calc(var(--u) * 28)}
-.stage[data-layout=wide] .gifts__mini{max-width:calc(var(--u) * 330);margin-top:calc(var(--u) * 8)}
-
-/* Foto do produto: quadrada, fundo branco (fotos do Mercado Livre são de fundo branco), contain para não cortar. */
-.gift__img{position:relative;aspect-ratio:1;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
-.gift__img img{width:100%;height:100%;object-fit:contain}
-.gift__ph{width:46%;height:46%;fill:none;stroke:var(--gold);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
-.gift__img .gift__ph{background:none}
-.gift-mini .gift__img:has(.gift__ph),.gift .gift__img:has(.gift__ph){background:linear-gradient(160deg,#fbf3e6,#f3e6dc)}
-
-/* Painel: mesma base visual do painel de resposta (folha que sobe do pé), lista em 2 colunas. */
-.gifts-panel__card{touch-action:pan-y pinch-zoom;position:relative;width:100%;max-width:560px;max-height:100%;height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--paper-light);color:var(--ink);border-radius:18px 18px 0 0;box-shadow:0 -10px 40px rgba(52,70,60,.28);padding:0 14px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(102%);transition:transform .34s cubic-bezier(.2,.7,.2,1)}
-.gifts-panel.is-open .gifts-panel__card{transform:none}
-.reduce .gifts-panel__card{transition:opacity .12s linear;transform:none;opacity:0}
-.reduce .gifts-panel.is-open .gifts-panel__card{opacity:1}
-.gifts-panel__head{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) 4px 10px;background:var(--paper-light);border-bottom:1px solid var(--line)}
-.gifts-panel__title{margin:4px 0 0;font-weight:400;font-style:italic;font-size:26px;line-height:1.1;outline:none}
-.gifts-panel__lead{margin:12px 4px 4px;font-family:var(--sans);font-size:14px;line-height:1.45;color:var(--muted)}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 4px 2px;margin:0 -14px;padding-left:18px;padding-right:18px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.chips::-webkit-scrollbar{display:none}
-.chips--cat{padding-top:6px}
-.chip{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-family:var(--sans);font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap}
-.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--paper-light)}
-.chips--cat .chip{min-height:36px;font-size:13px}
-.chips--cat .chip[aria-pressed=true]{background:var(--rosa-cha);border-color:var(--clay);color:var(--clay-dark)}
-.gifts-grid{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-@media (min-width:520px){.gifts-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.gift{display:flex;flex-direction:column;min-width:0;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.gift__body{flex:1;display:flex;flex-direction:column;padding:8px 10px 10px;border-top:1px solid #f1e7df}
-.gift__cat{margin:0;font-family:var(--sans);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--sage)}
-.gift__nome{margin:3px 0 0;font-family:var(--sans);font-weight:500;font-size:14px;line-height:1.3;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.gift__nota{margin:4px 0 0;font-style:italic;font-size:13px;line-height:1.3;color:var(--clay-dark)}
-.gift__preco{margin:auto 0 0;padding-top:8px;font-family:var(--sans);font-size:17px;font-weight:700;color:var(--ink)}
-.gifts-panel .gift__btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:8px;padding:0 8px;font-size:15px;text-decoration:none}
-.gift__breve,.gift__ganho{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:8px;border-radius:999px;border:1px dashed var(--line);font-family:var(--sans);font-size:13px;color:var(--muted);text-align:center}
-.gift__ganho{border-style:solid;background:var(--rosa-cha);color:var(--clay-dark)}
-.gift.is-ganho .gift__img{opacity:.55}
-.gifts-vazio{margin:20px 4px;font-family:var(--sans);font-size:15px;color:var(--muted)}
-.gifts-vazio[hidden]{display:none}
-.gifts-panel__foot{margin:18px 4px 0;padding-top:14px;border-top:1px solid var(--line)}
-.gifts-panel__entrega{margin:0;font-size:15px;line-height:1.4}
-.gifts-panel .gifts-avisar{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;text-decoration:none}
-.gifts-panel__aviso{margin:12px 0 0;font-family:var(--sans);font-size:12px;line-height:1.4;color:var(--muted)}
-@media (min-width:700px) and (min-height:620px){.gifts-panel__card{border-radius:18px;height:auto;max-height:92%}}
-/* Telas baixas (ex.: 320x568): a folha de presentes precisa caber inteira, senão o livro cai no modo simples. */
-@media (max-height:680px){
-  .gifts__orn,.gifts__nota{display:none}
-  .gifts__text{font-size:14px;line-height:1.38}
-  .gifts__mini{margin-top:calc(var(--u) * 12)}
-  .gift-mini__nome{-webkit-line-clamp:2;min-height:0}
-}
-/* Celular deitado: texto e botão à esquerda, vitrine à direita (cabe em 390 px de altura). */
-.stage[data-layout=wide] .sheet--gifts .sheet__inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:calc(var(--u) * 24);align-content:center;justify-content:stretch}
-.stage[data-layout=wide] .sheet--gifts .sheet__inner>*{grid-column:1}
-.stage[data-layout=wide] .sheet--gifts .gifts__mini{grid-column:2;grid-row:1 / span 6;align-self:center;margin:0;max-width:none}
-.stage[data-layout=wide] .gifts__text{font-size:14px}
-.stage[data-layout=wide] .gifts__nota{display:none}
+.stage[data-layout=wide] .sheet--gifts .btn{margin-top:calc(var(--u) * 12)}

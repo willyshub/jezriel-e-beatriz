@@ -93,6 +93,56 @@ function h(tag, props = {}, ...filhos) {
   return n;
 }
 
+/* ------------------------------------------------------------------ fundo desfocado (bitmap estático) */
+/**
+ * Desfoque em caixa, separável, sobre RGBA (Uint8ClampedArray), com ajuste leve de saturação e brilho.
+ * Puro e barato: roda em ~1.000 pixels, uma vez por foto.
+ */
+export function desfocarPixels(px, w, h, raio = 2, passes = 3, { saturacao = 1.15, brilho = 1.04 } = {}) {
+  const tmp = new Float32Array(px.length);
+  const src = Float32Array.from(px);
+  const passo = (a, b, horizontal) => {
+    const n = horizontal ? w : h, m = horizontal ? h : w;
+    for (let o = 0; o < m; o++) {
+      for (let i = 0; i < n; i++) {
+        let r = 0, g = 0, bl = 0, al = 0, c = 0;
+        for (let k = -raio; k <= raio; k++) {
+          const j = Math.min(n - 1, Math.max(0, i + k));
+          const idx = 4 * (horizontal ? o * w + j : j * w + o);
+          r += a[idx]; g += a[idx + 1]; bl += a[idx + 2]; al += a[idx + 3]; c++;
+        }
+        const d = 4 * (horizontal ? o * w + i : i * w + o);
+        b[d] = r / c; b[d + 1] = g / c; b[d + 2] = bl / c; b[d + 3] = al / c;
+      }
+    }
+  };
+  for (let p = 0; p < passes; p++) { passo(src, tmp, true); passo(tmp, src, false); }
+  for (let i = 0; i < px.length; i += 4) {
+    const cinza = 0.299 * src[i] + 0.587 * src[i + 1] + 0.114 * src[i + 2];
+    for (let k = 0; k < 3; k++) px[i + k] = (cinza + (src[i + k] - cinza) * saturacao) * brilho;
+    px[i + 3] = src[i + 3];
+  }
+  return px;
+}
+
+function ambienteAoCarregar(img, fig) {
+  const gerar = () => {
+    try {
+      const w = 24, h = Math.max(8, Math.min(64, Math.round(w * (img.naturalHeight / img.naturalWidth || 1.6))));
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, w, h);
+      const dados = ctx.getImageData(0, 0, w, h);
+      desfocarPixels(dados.data, w, h);
+      ctx.putImageData(dados, 0, 0);
+      fig.style.setProperty('--foto-amb', `url("${cv.toDataURL('image/jpeg', 0.82)}")`);
+      fig.classList.add('has-amb');
+    } catch { /* sem fundo desfocado: fica o papel */ }
+  };
+  if (img.complete && img.naturalWidth) gerar(); else img.addEventListener('load', gerar, { once: true });
+}
+
 /**
  * Cria as folhas da galeria.
  * @param {object[]} fotos já normalizadas
@@ -123,12 +173,14 @@ export function montarFolhas(fotos, t, { provisorias = false, plano = organizarF
       const pos = POSICOES[p.layout][j];
       const img = h('img', {
         src: f.src, srcset: f.srcset, sizes: SIZES[p.layout][j], width: f.w, height: f.h,
-        loading: 'lazy', decoding: 'async', alt: '', style: f.foco ? `object-position:${f.foco}` : '',
+        loading: 'lazy', decoding: 'async', draggable: 'false', alt: '', style: f.foco ? `object-position:${f.foco}` : '',
       });
       const btn = h('button', { type: 'button', class: 'gal__btn', 'data-foto': String(idx), 'aria-label': `Ampliar foto ${idx + 1} de ${fotos.length}: ${f.alt}` }, img);
-      // Folha de uma foto: a própria imagem vira o "ar" desfocado do fundo (--foto), para ocupar a tela em qualquer proporção.
-      const amb = p.layout === 'uma' ? `;--foto:url("${f.src.replace(/["\\()]/g, '')}")` : '';
-      const fig = h('figure', { class: `gal__f gal__f--${pos} line`, style: `--i:${2 + j};--dy:${18 + j * 8}${amb}` }, btn);
+      const fig = h('figure', { class: `gal__f gal__f--${pos} line`, style: `--i:${2 + j};--dy:${18 + j * 8}` }, btn);
+      // Folha de uma foto: a própria imagem vira o "ar" desfocado do fundo, para ocupar a tela em qualquer proporção.
+      // Correção 21/11/2026 (glitch da dobra no Android): o desfoque é calculado UMA vez num bitmap minúsculo, em vez de
+      // `filter: blur(26px)` no CSS, que a StPageFlip obrigava o celular a repintar a cada quadro da virada.
+      if (p.layout === 'uma') ambienteAoCarregar(img, fig);
       if (f.legenda) fig.append(h('figcaption', { class: 'gal__cap', text: f.legenda }));
       gal.append(fig);
     });

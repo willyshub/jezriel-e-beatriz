@@ -41,24 +41,16 @@ export function montarTextos({ nome = null, vagas = 1 } = {}) {
       eyebrow: 'Guarde esta data',
       fecho: plural ? 'E a presença de vocês faz parte dela.' : 'E a sua presença faz parte dela.',
     },
-    // ---- Lista de presentes (folha depois da Celebração + painel). Rascunho de 20/11/2026 para revisão do casal.
+    // ---- Lista de presentes (folha depois da Celebração; link externo desde 21/11/2026). Rascunho para revisão do casal.
     presentes: {
       eyebrow: 'Lista de presentes',
       titulo: ['Um presente,', 'se quiser.'],
       texto: plural
-        ? 'A presença de vocês já é o nosso maior presente. Se quiserem nos mimar, separamos algumas ideias para a casa nova.'
-        : 'A sua presença já é o nosso maior presente. Se quiser nos mimar, separamos algumas ideias para a casa nova.',
+        ? 'A presença de vocês já é o nosso maior presente. Se quiserem nos mimar, preparamos uma lista com carinho.'
+        : 'A sua presença já é o nosso maior presente. Se quiser nos mimar, preparamos uma lista com carinho.',
       botao: 'Ver lista de presentes',
-      selo: 'Compra segura pelo Mercado Livre.',
-      painelTitulo: 'Ideias para a casa nova',
-      painelTexto: 'Escolha um item e finalize a compra no Mercado Livre. Os preços são de referência e podem mudar por lá.',
-      presentear: 'Presentear',
-      emBreve: 'Link em breve',
-      ganho: 'Já ganhamos, obrigado!',
-      entrega: 'Para enviar direto para nós, peça o endereço de entrega pelo WhatsApp.',
-      avisar: 'Avisar que presenteei',
-      avisarMensagem: 'Olá! Escolhi um presente da lista de vocês. 🎁',
-      afiliado: 'Alguns links são de afiliado do Mercado Livre: o preço para você é o mesmo.',
+      nota: (site) => `A lista abre no site ${site}.`,
+      emBreve: 'O link da lista chega em breve.',
     },
     // ---- Passagens bíblicas (Salmos 126, tradução ARA conforme enviada por Will em 12/11/2026).
     // Cada uma tem uma folha própria de destaque. `intro` é a ponte contextual na voz do casal (rascunho para revisão).

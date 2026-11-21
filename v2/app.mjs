@@ -1,18 +1,17 @@
 // V2 · inicialização e estado de navegação.
 // Estado: capa (envelope) -> abrindo (carta sai do envelope) -> leitura; leitura <-> resposta (painel RSVP) e foto (modo foco).
 // Música é independente. Efeitos de papel (paper-sound.mjs) seguem o controle de som.
-import { BookController } from './book-controller.mjs?v=202611200440';
-import { MotionController } from './motion-controller.mjs?v=202611200440';
-import { AudioController } from './audio-controller.mjs?v=202611200440';
-import { RsvpController } from './rsvp-controller.mjs?v=202611200440';
-import { PaperSound } from './paper-sound.mjs?v=202611200440';
-import { Abertura, Coreografia } from './abertura.mjs?v=202611200440';
-import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611200440';
-import { montarTextos } from './textos.mjs?v=202611200440';
-import { carregarConfig } from './config.mjs?v=202611200440';
-import { lerContexto, linkWhatsApp } from './share.mjs?v=202611200440';
-import { PresentesController, montarFolhaPresentes, normalizarPresentes } from './presentes.mjs?v=202611200440';
-import { PRESENTES } from './presentes-dados.mjs?v=202611200440';
+import { BookController, loadFlipLib } from './book-controller.mjs?v=202611211855';
+import { MotionController } from './motion-controller.mjs?v=202611211855';
+import { AudioController } from './audio-controller.mjs?v=202611211855';
+import { RsvpController } from './rsvp-controller.mjs?v=202611211855';
+import { PaperSound } from './paper-sound.mjs?v=202611211855';
+import { Abertura, Coreografia } from './abertura.mjs?v=202611211855';
+import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611211855';
+import { montarTextos } from './textos.mjs?v=202611211855';
+import { carregarConfig } from './config.mjs?v=202611211855';
+import { lerContexto } from './share.mjs?v=202611211855';
+import { montarFolhaPresentes } from './presentes.mjs?v=202611211855';
 
 const $ = (id) => document.getElementById(id);
 const app = $('app');
@@ -60,9 +59,8 @@ store.querySelectorAll('.sheet--verso').forEach((s) => {
   s.setAttribute('aria-label', `Passagem bíblica, ${v.ref}`);
 });
 
-// Lista de presentes: folha logo depois da Celebração (some se a lista estiver vazia).
-const presentes = normalizarPresentes(config.presentes ?? PRESENTES);
-const folhaPresentes = montarFolhaPresentes(presentes, T.presentes);
+// Lista de presentes: folha logo depois da Celebração, com botão para o link externo (config.mjs → presentes.link).
+const folhaPresentes = montarFolhaPresentes(config.presentes, T.presentes);
 if (folhaPresentes) store.querySelector('.sheet--party').after(folhaPresentes);
 
 const sheets = [...store.querySelectorAll('.sheet')];
@@ -197,10 +195,6 @@ prev.addEventListener('click', () => book.prev('botao'));
 next.addEventListener('click', () => { esconderDica(true); book.next('botao'); });
 $('goto-local').addEventListener('click', () => book.goTo(LOCAL_INDEX, 'botao'));
 
-const giftsPanel = folhaPresentes
-  ? new PresentesController({ root: $('presentes'), stage, itens: presentes, t: T.presentes, whatsapp: config.whatsapp, linkWhatsApp, reduced: () => motion.reduced })
-  : null;
-folhaPresentes?.querySelector('.gifts-open').addEventListener('click', (e) => giftsPanel.open(e.currentTarget));
 const GIFTS_INDEX = folhaPresentes ? sheets.indexOf(folhaPresentes) : -1;
 $('goto-gifts').hidden = !folhaPresentes;
 if (!folhaPresentes) $('goto-local').style.marginRight = 'auto';
@@ -236,7 +230,7 @@ motion.onChange(syncReduceBtn);
 syncReduceBtn();
 
 document.addEventListener('keydown', (e) => {
-  if (stage.dataset.state !== 'reading' || rsvp.aberto || foco.aberto || giftsPanel?.aberto || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (stage.dataset.state !== 'reading' || rsvp.aberto || foco.aberto || e.altKey || e.ctrlKey || e.metaKey) return;
   if (e.target.closest?.('input,textarea,select')) return;
   if (e.key === 'ArrowRight') { e.preventDefault(); book.next('teclado'); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); book.prev('teclado'); }
@@ -274,6 +268,7 @@ async function abrir({ musica = false, em = 0 } = {}) {
     if (comCoreo) rev.dataset.coreo = '1';
     else rev.classList.add('is-in', 'no-trans');   // a carta e a folha 1 já nascem iguais e reveladas
     const fim = abertura.tocar({ coreo: comCoreo });
+    loadFlipLib().catch(() => {});                  // a biblioteca carrega em paralelo à animação
     await fim;
   }
   await book.open(cena ? 0 : em);
@@ -327,7 +322,7 @@ ro.observe(stage);
 aplicarEscala();
 syncSound();
 
-/* ---- pré-carregamento com a página ociosa (envelope parado): imagens da 1ª/2ª folha e metadados da música ---- */
+/* ---- pré-carregamento com a página ociosa (envelope parado): biblioteca, imagens da 1ª/2ª folha e metadados da música ---- */
 function ocioso(fn) { (window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 3000 }) : (f) => setTimeout(f, 1500))(fn); }
 function precarregarImagens() {
   for (const img of [...sheets[0].querySelectorAll('img'), ...(sheets[1]?.querySelectorAll('img') ?? [])]) {
@@ -339,10 +334,11 @@ function precarregarImagens() {
 }
 function aoOciar() {
   if (stage.dataset.state !== 'cover') return;
+  loadFlipLib().catch(() => {});
   precarregarImagens();
   audio.prepararMetadata(); // só cabeçalho do arquivo; nada com economia de dados ou 2g
 }
 if (document.readyState === 'complete') ocioso(aoOciar); else window.addEventListener('load', () => ocioso(aoOciar), { once: true });
 
 // Gancho de QA (somente leitura) para os testes automatizados.
-window.__v2 = { book, presentes: giftsPanel, motion, audio, rsvp, paper, foco, abertura, contexto, textos: T, fotos, get index() { return book.index; } };
+window.__v2 = { book, motion, audio, rsvp, paper, foco, abertura, contexto, textos: T, fotos, get index() { return book.index; } };

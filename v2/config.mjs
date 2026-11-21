@@ -1,7 +1,7 @@
 // Configuração pública da V2. NÃO colocar tokens ou lista de convidados aqui.
 // WhatsApp de destino: número do noivo informado e autorizado por Will em 17/11/2026 (ver DECISOES.md).
 // Vazio = o convidado escolhe o contato no próprio WhatsApp (comportamento anterior).
-import { fotosProvisorias } from './fotos.mjs?v=202611200440';
+import { fotosProvisorias } from './fotos.mjs?v=202611211855';
 
 const base = {
   casal: 'Jezriel e Beatriz',
@@ -22,6 +22,12 @@ const base = {
   // 17/11/2026: uma foto entre cada versículo (3 fotos do casal, sem repetição).
   fotos: [1, 2, 3].map((n) => ({ src: `assets/fotos/casal-${n}-480.webp`, srcset: `assets/fotos/casal-${n}-480.webp 480w, assets/fotos/casal-${n}-960.webp 960w`, w: 480, h: 854, alt: 'Jezriel e Beatriz', foco: '50% 38%' })),
   fotosProvisorias: false,
+  /**
+   * Lista de presentes: link externo (Lista Ideal), pedido dos noivos em 21/11/2026.
+   * >>> Quando o casal mandar o link, COLAR AQUI em `link` (entre as aspas) e publicar. <<<
+   * Vazio = o botão aparece desativado com "O link da lista chega em breve". `ativa: false` remove a folha.
+   */
+  presentes: { ativa: true, link: 'https://cha-de-casa-nova-z5ab.listaideal.com.br/pt', site: 'Lista Ideal' },
 };
 
 /** Gancho de QA: window.__JB_V2_CONFIG__ (definido antes do módulo) mescla a configuração, só no navegador de teste. */
