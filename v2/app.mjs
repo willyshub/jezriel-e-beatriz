@@ -1,17 +1,17 @@
 // V2 · inicialização e estado de navegação.
 // Estado: capa (envelope) -> abrindo (carta sai do envelope) -> leitura; leitura <-> resposta (painel RSVP) e foto (modo foco).
 // Música é independente. Efeitos de papel (paper-sound.mjs) seguem o controle de som.
-import { BookController, loadFlipLib } from './book-controller.mjs?v=202611211855';
-import { MotionController } from './motion-controller.mjs?v=202611211855';
-import { AudioController } from './audio-controller.mjs?v=202611211855';
-import { RsvpController } from './rsvp-controller.mjs?v=202611211855';
-import { PaperSound } from './paper-sound.mjs?v=202611211855';
-import { Abertura, Coreografia } from './abertura.mjs?v=202611211855';
-import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611211855';
-import { montarTextos } from './textos.mjs?v=202611211855';
-import { carregarConfig } from './config.mjs?v=202611211855';
-import { lerContexto } from './share.mjs?v=202611211855';
-import { montarFolhaPresentes } from './presentes.mjs?v=202611211855';
+import { BookController } from './book-controller.mjs?v=202611211911';
+import { MotionController } from './motion-controller.mjs?v=202611211911';
+import { AudioController } from './audio-controller.mjs?v=202611211911';
+import { RsvpController } from './rsvp-controller.mjs?v=202611211911';
+import { PaperSound } from './paper-sound.mjs?v=202611211911';
+import { Abertura, Coreografia } from './abertura.mjs?v=202611211911';
+import { FocoFotos, montarFolhas, normalizarFotos, planoUmaPorFolha, fotosProvisorias } from './fotos.mjs?v=202611211911';
+import { montarTextos } from './textos.mjs?v=202611211911';
+import { carregarConfig } from './config.mjs?v=202611211911';
+import { lerContexto } from './share.mjs?v=202611211911';
+import { montarFolhaPresentes } from './presentes.mjs?v=202611211911';
 
 const $ = (id) => document.getElementById(id);
 const app = $('app');
@@ -268,7 +268,6 @@ async function abrir({ musica = false, em = 0 } = {}) {
     if (comCoreo) rev.dataset.coreo = '1';
     else rev.classList.add('is-in', 'no-trans');   // a carta e a folha 1 já nascem iguais e reveladas
     const fim = abertura.tocar({ coreo: comCoreo });
-    loadFlipLib().catch(() => {});                  // a biblioteca carrega em paralelo à animação
     await fim;
   }
   await book.open(cena ? 0 : em);
@@ -322,7 +321,7 @@ ro.observe(stage);
 aplicarEscala();
 syncSound();
 
-/* ---- pré-carregamento com a página ociosa (envelope parado): biblioteca, imagens da 1ª/2ª folha e metadados da música ---- */
+/* ---- pré-carregamento com a página ociosa (envelope parado): imagens da 1ª/2ª folha e metadados da música ---- */
 function ocioso(fn) { (window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 3000 }) : (f) => setTimeout(f, 1500))(fn); }
 function precarregarImagens() {
   for (const img of [...sheets[0].querySelectorAll('img'), ...(sheets[1]?.querySelectorAll('img') ?? [])]) {
@@ -334,7 +333,6 @@ function precarregarImagens() {
 }
 function aoOciar() {
   if (stage.dataset.state !== 'cover') return;
-  loadFlipLib().catch(() => {});
   precarregarImagens();
   audio.prepararMetadata(); // só cabeçalho do arquivo; nada com economia de dados ou 2g
 }

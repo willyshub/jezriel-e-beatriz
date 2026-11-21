@@ -1,128 +1,227 @@
-// Adaptador do motor de folhas (StPageFlip, MIT) + gestos + modo simples (deck).
+// Adaptador do motor de folhas (dobra própria, 21/11/2026) + gestos + modo simples (deck).
 //
-// Decisões (ver docs/V2-IMPLEMENTACAO.md):
-// - A biblioteca é carregada sob demanda (após o gesto de abrir). Se falhar, o modo simples assume.
-// - Os eventos nativos de toque/mouse da biblioteca são bloqueados (capture no host) e substituídos
-//   por Pointer Events próprios, que acionam a API pública (startUserTouch/userMove/userStop) da biblioteca.
-//   Motivo: o toque rápido da biblioteca não vira folha, o limite de virada exige cruzar a tela inteira
-//   e links/botões precisam de proteção contra clique após arrasto.
-// - Dobra a partir do CANTO INFERIOR DIREITO: arraste ou toque na zona do canto; "espiada" real via
-//   FlipController.showCorner. Voltar: canto inferior esquerdo, gesto para a direita ou botão.
-// - O motor simples (fade curto) serve a "Reduzir efeitos", falha da biblioteca e conteúdo maior que a tela.
+// Decisões (ver docs/DECISOES.md D44):
+// - Dobra diagonal pelo CANTO INFERIOR DIREITO, desenhada SÓ com transform: cada folha mora numa caixa girada com
+//   overflow:hidden alinhada à linha da dobra; a folha dentro dela recebe a rotação inversa e fica parada na tela.
+//   O verso (aba dobrada) é papel liso espelhado na linha da dobra. Nada de clip-path por quadro: o conteúdo da folha
+//   é rasterizado uma vez e a GPU só move/recorta camadas (a StPageFlip repintava tudo a cada quadro → glitch no Android).
+// - A folha seguinte e a anterior ficam montadas por baixo (já pintadas) para o gesto começar sem atraso.
+// - Gestos: arrastar/tocar no canto inferior direito vira; canto inferior esquerdo volta; deslize horizontal vira.
+// - O motor simples (fade curto) serve a "Reduzir efeitos" e a conteúdo maior que a tela.
 
-const LIB_URL = new URL('./vendor/page-flip.browser.js', import.meta.url).href;
-let libPromise = null;
+/** Mantido por compatibilidade: não há biblioteca externa desde 21/11/2026. */
+export function loadFlipLib() { return Promise.resolve(null); }
 
-export function loadFlipLib(timeoutMs = 7000) {
-  if (window.St?.PageFlip) return Promise.resolve(window.St.PageFlip);
-  if (libPromise) return libPromise;
-  libPromise = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    const t = setTimeout(() => { s.remove(); reject(new Error('tempo esgotado ao carregar a biblioteca')); }, timeoutMs);
-    s.src = LIB_URL;
-    s.async = true;
-    s.onload = () => {
-      clearTimeout(t);
-      window.St?.PageFlip ? resolve(window.St.PageFlip) : reject(new Error('biblioteca sem St.PageFlip'));
-    };
-    s.onerror = () => { clearTimeout(t); s.remove(); reject(new Error('falha ao carregar a biblioteca')); };
-    document.head.append(s);
-  }).catch((e) => { libPromise = null; throw e; });
-  return libPromise;
-}
-
-const LIB_CLASSES = ['stf__item', '--soft', '--hard', '--left', '--right', '--simple'];
 function limparFolha(sheet) {
   sheet.removeAttribute('style');
-  sheet.classList.remove(...LIB_CLASSES, 'is-current');
+  sheet.classList.remove('leaf', 'is-current');
+}
+
+const ease = (t) => 1 - Math.pow(1 - t, 3);
+const div = (cls) => { const d = document.createElement('div'); d.className = cls; return d; };
+
+/* ------------------------------------------------------------------ geometria (pura, testável) */
+/**
+ * Prende o canto P ao papel: a folha gira presa pela lombada (borda esquerda), então o canto não pode se afastar
+ * mais que a largura do pé da lombada (0,h) nem mais que a diagonal do topo da lombada (0,0).
+ */
+export function prenderCanto(p, w, h) {
+  let { x, y } = p;
+  const dB = Math.hypot(x, y - h);
+  if (dB > w) { x = (x / dB) * w; y = h + ((y - h) / dB) * w; }
+  const D = Math.hypot(w, h), dT = Math.hypot(x, y);
+  if (dT > D) { x = (x / dT) * D; y = (y / dT) * D; }
+  return { x, y };
+}
+
+/** Linha da dobra entre o canto C=(w,h) e o ponto P: meio M, ângulo θ da direção C−P e progresso 0..1. */
+export function linhaDaDobra(p, w, h) {
+  const dx = w - p.x, dy = h - p.y, len = Math.hypot(dx, dy);
+  return { mx: (w + p.x) / 2, my: (h + p.y) / 2, ang: Math.atan2(dy, dx), len, prog: Math.min(1, len / (2 * w)) };
 }
 
 /* ------------------------------------------------------------------ motor com dobra */
-class FlipEngine {
+class FoldEngine {
   type = 'flip';
-  constructor(PageFlip, host, sheets, start, size, hooks) {
+  constructor(host, sheets, start, size, hooks) {
     this.host = host;
     this.sheets = sheets;
     this.hooks = hooks;
-    this.mount = document.createElement('div');
-    host.append(this.mount);
-    this.pf = new PageFlip(this.mount, {
-      width: size.w, height: size.h,
-      size: 'stretch',
-      // Retrato sempre (uma folha por vez, preenchendo a tela): a biblioteca escolhe retrato quando
-      // a largura do bloco < minWidth*2; os estilos inline de min-width são zerados abaixo.
-      minWidth: 20000, maxWidth: 40000, minHeight: 100, maxHeight: 40000,
-      autoSize: false, usePortrait: true, showCover: false,
-      drawShadow: true, maxShadowOpacity: 0.3, flippingTime: 800,
-      mobileScrollSupport: true, showPageCorners: false, clickEventForward: true,
-      useMouseEvents: true, // necessário para o destroy() remover os ouvintes; os eventos de entrada são bloqueados abaixo
-      startPage: start, startZIndex: 0, swipeDistance: 30,
-    });
-    this.mount.style.minWidth = '0';
-    this.mount.style.minHeight = '0';
-    // Bloqueia mousedown/touchstart nativos da biblioteca (os gestos são nossos).
-    for (const t of ['mousedown', 'touchstart']) {
-      this.mount.addEventListener(t, (e) => e.stopPropagation(), { capture: true });
-    }
-    this.pf.on('flip', (e) => hooks.onFlip(e.data));
-    this.pf.on('changeState', (e) => hooks.onState?.(e.data));
-    this.pf.loadFromHTML(sheets);
+    this.index = start;
+    this.st = 'read';
+    this.raf = 0;
     this.peekTimer = 0;
-    this.avisado = false;
-    this.cancelando = false; // soltou a folha de volta: sem som de virada
+    this.root = div('fold');
+    this.clips = sheets.map((s) => {
+      const c = div('leafclip');
+      s.classList.add('leaf');
+      c.append(s);
+      this.root.append(c);
+      return c;
+    });
+    this.sombra = div('fold-shadow');
+    this.abaClip = div('leafclip fold-flapclip');
+    this.aba = div('fold-flap');
+    this.abaLuz = div('fold-flapshade');
+    this.aba.append(this.abaLuz);
+    this.abaClip.append(this.aba);
+    this.root.append(this.sombra, this.abaClip);
+    host.append(this.root);
+    this.resize(size.w, size.h);
+    this.#layout();
   }
-  get state() { return this.pf.getState(); }
-  get busy() { return this.state === 'flipping' || this.state === 'user_fold'; }
+
+  get state() { return this.st; }
+  get busy() { return this.st === 'flipping' || this.st === 'user_fold'; }
+  #estado(s) { if (this.st !== s) { this.st = s; this.hooks.onState?.(s); } }
+
   resize(w, h) {
-    const s = this.pf.getSettings();
-    s.width = w; s.height = h;   // a proporção da folha acompanha a área útil (folha ocupa a tela)
-    this.pf.update();
+    this.w = w; this.h = h;
+    this.L = Math.ceil(Math.hypot(w, h) * 2.2);
+    const L = this.L;
+    for (const c of [...this.clips, this.abaClip]) { c.style.width = L + 'px'; c.style.height = 2 * L + 'px'; }
+    for (const s of this.sheets) { s.style.width = w + 'px'; s.style.height = h + 'px'; }
+    this.aba.style.width = w + 'px'; this.aba.style.height = h + 'px';
+    this.abaLuz.style.height = 2 * L + 'px';
+    this.sombra.style.height = 2 * L + 'px';
   }
-  next() { if (!this.busy) this.pf.flipNext('bottom'); }
-  prev() { if (!this.busy) this.pf.flipPrev('bottom'); }
-  goTo(i) { if (!this.busy) this.pf.flip(i, 'bottom'); }
-  cornerStart(p) { this.pf.startUserTouch(p); }
-  cornerMove(p) { this.pf.userMove(p, true); }
-  cornerEnd(p, moved, vx) {
-    if (!moved) { this.pf.userStop(p, false); return; } // toque: animação de dobra a partir do canto
-    const fc = this.pf.getFlipController();
-    const calc = fc.getCalculation();
-    if (!calc) { this.pf.userStop(p, true); return; }
-    // Limite de virada próprio: passar de ~40% da largura (ou gesto rápido) vira; a biblioteca exigiria cruzar a tela toda.
-    const rect = this.pf.getBoundsRect();
-    const pos = calc.getPosition();
-    const rapido = vx < -0.45 && pos.x < rect.pageWidth * 0.92;
-    const virar = pos.x < rect.pageWidth * 0.6 || rapido;
-    this.cancelando = !virar;
-    // A animação de soltar o arrasto não emite 'flipping' de forma confiável: o som sai daqui (uma vez só).
-    if (virar) { this.avisado = true; this.hooks.onTurn?.(); }
-    const y = calc.getCorner() === 'bottom' ? rect.height : 0;
-    this.pf.userStop(p, true); // encerra o estado de toque sem acionar o limite padrão
-    try {
-      fc.animateFlippingTo(pos, { x: virar ? -rect.pageWidth : rect.pageWidth, y }, virar);
-    } catch { this.pf.userStop(p, false); }
+
+  /** Repouso: atual por cima, anterior e seguinte montadas por baixo (já pintadas). */
+  #layout() {
+    const i = this.index;
+    this.clips.forEach((c, k) => {
+      const vis = k === i || k === i + 1 || k === i - 1;
+      c.classList.toggle('is-vis', vis);
+      c.style.zIndex = k === i ? 3 : 1;
+      c.style.transform = '';
+      this.sheets[k].style.transform = '';
+      this.sheets[k].inert = k !== i;
+      this.sheets[k].setAttribute('aria-hidden', k === i ? 'false' : 'true');
+      this.sheets[k].classList.toggle('is-current', k === i);
+    });
+    this.abaClip.classList.remove('is-vis');
+    this.sombra.style.opacity = '0';
+    this.mov = null;
   }
-  hover(p) {
-    if (this.state === 'read' || this.state === 'fold_corner') this.pf.getFlipController().showCorner(p);
-  }
-  peek(size) {
-    if (this.state !== 'read') return false;
-    const fc = this.pf.getFlipController();
-    clearTimeout(this.peekTimer);
-    fc.showCorner({ x: size.w - 4, y: size.h - 4 });            // levanta o canto de verdade
-    this.peekTimer = setTimeout(() => this.release(size), 1100);  // e solta de volta
+
+  /** Prepara uma virada: `mov` é a folha que dobra (por cima), `sob` a que aparece por baixo. */
+  #preparar(alvo) {
+    if (alvo < 0 || alvo >= this.sheets.length || alvo === this.index) return false;
+    const frente = alvo > this.index;
+    const mov = frente ? this.index : alvo;
+    const sob = frente ? alvo : this.index;
+    this.clips.forEach((c, k) => { c.style.zIndex = k === mov ? 3 : k === sob ? 2 : 0; if (k === mov || k === sob) c.classList.add('is-vis'); });
+    this.sheets[mov].inert = true;
+    this.abaClip.classList.add('is-vis');
+    this.mov = mov; this.sob = sob; this.alvo = alvo; this.frente = frente;
+    this.hooks.prepare?.(this.sheets[sob]);
+    this.#aplicar(frente ? { x: this.w, y: this.h } : { x: -this.w, y: this.h });
     return true;
   }
-  release(size) {
-    clearTimeout(this.peekTimer);
-    if (this.state === 'fold_corner') this.pf.getFlipController().showCorner({ x: size.w / 2, y: size.h / 2 });
+
+  #aplicar(p0) {
+    const { w, h, L } = this;
+    const p = prenderCanto(p0, w, h);
+    this.p = p;
+    const g = linhaDaDobra(p, w, h);
+    const c = this.clips[this.mov], s = this.sheets[this.mov];
+    if (g.len < 0.5) {
+      c.style.transform = ''; s.style.transform = '';
+      this.abaClip.style.transform = 'translate(-99999px,0)';
+      this.sombra.style.opacity = '0';
+      return;
+    }
+    const deg = (g.ang * 180) / Math.PI;
+    const caixa = `translate(${g.mx}px,${g.my}px) rotate(${deg}deg) translate(${-L}px,${-L}px)`;
+    const inversa = `rotate(${-deg}deg) translate(${-g.mx}px,${-g.my}px)`;
+    c.style.transform = caixa;
+    s.style.transform = `translate(${L}px,${L}px) ${inversa}`;
+    this.abaClip.style.transform = caixa;
+    this.aba.style.transform = `translate(${L}px,${L}px) scale(-1,1) ${inversa}`;
+    this.abaLuz.style.transform = `translate(${g.mx}px,${g.my}px) rotate(${deg}deg) scale(-1,1) translate(-70px,${-L}px)`;
+    this.sombra.style.transform = `translate(${g.mx}px,${g.my}px) rotate(${deg}deg) translate(0,${-L}px)`;
+    // Sombra na folha de baixo: forte no começo, some quando a folha cobre quase tudo.
+    const pr = g.prog;
+    this.sombra.style.opacity = String(Math.min(1, pr * 4) * (1 - pr * 0.85));
   }
-  destroy() {
+
+  #animar(de, para, ms, fim) {
+    cancelAnimationFrame(this.raf);
+    const t0 = performance.now();
+    const lift = this.h * 0.12 * (Math.abs(para.x - de.x) > this.w ? 1 : 0);
+    const passo = (t) => {
+      const k = Math.min(1, (t - t0) / ms), e = ease(k);
+      this.#aplicar({ x: de.x + (para.x - de.x) * e, y: de.y + (para.y - de.y) * e - Math.sin(Math.PI * e) * lift });
+      if (k < 1) this.raf = requestAnimationFrame(passo); else fim();
+    };
+    this.raf = requestAnimationFrame(passo);
+  }
+
+  /** Completa (vira de vez) ou devolve a folha. */
+  #soltar(completar, de = this.p) {
+    const destino = (this.frente === completar) ? { x: -this.w, y: this.h } : { x: this.w, y: this.h };
+    const dist = Math.hypot(destino.x - de.x, destino.y - de.y) / (2 * this.w);
+    if (completar) this.hooks.onTurn?.();
+    this.#estado('flipping');
+    this.#animar(de, destino, 280 + 520 * Math.min(1, dist), () => {
+      if (completar) this.index = this.alvo;
+      this.#layout();
+      this.#estado('read');
+      if (completar) this.hooks.onFlip(this.index);
+    });
+  }
+
+  next() { this.goTo(this.index + 1); }
+  prev() { this.goTo(this.index - 1); }
+  goTo(i) { if (!this.busy && this.#preparar(i)) this.#soltar(true); }
+
+  cornerStart(p, zone) {
+    if (this.busy) return;
+    cancelAnimationFrame(this.raf);
     clearTimeout(this.peekTimer);
-    this.sheets.forEach((s) => s.remove());
-    try { this.pf.destroy(); } catch { /* já removido */ }
-    this.mount.remove();
-    this.sheets.forEach(limparFolha);
+    if (this.mov != null) this.#layout();
+    const alvo = zone === 'bl' ? this.index - 1 : this.index + 1;
+    if (!this.#preparar(alvo)) return;
+    this.zona = zone;
+    this.#estado('user_fold');
+  }
+  cornerMove(p) { if (this.st === 'user_fold') this.#aplicar(p); }
+  cornerEnd(p, moved, vx) {
+    if (this.st !== 'user_fold') return;
+    if (!moved) { this.#soltar(true); return; }
+    const pos = this.p;
+    const virar = this.frente
+      ? pos.x < this.w * 0.6 || (vx < -0.45 && pos.x < this.w * 0.92)
+      : pos.x > -this.w * 0.2 || vx > 0.45;
+    this.#soltar(virar, pos);
+  }
+
+  hover(p) {
+    if (this.st !== 'read' && this.st !== 'fold_corner') return;
+    const z = 90;
+    if (p.x > this.w - z && p.y > this.h - z && this.index < this.sheets.length - 1) {
+      if (this.st === 'read') { if (!this.#preparar(this.index + 1)) return; this.#estado('fold_corner'); }
+      this.#aplicar({ x: Math.min(p.x, this.w - 2), y: Math.min(p.y, this.h - 2) });
+    } else if (this.st === 'fold_corner') this.release();
+  }
+  peek() {
+    if (this.st !== 'read' || !this.#preparar(this.index + 1)) return false;
+    this.#estado('fold_corner');
+    const C = { x: this.w, y: this.h }, P = { x: this.w - Math.min(90, this.w * 0.24), y: this.h - Math.min(70, this.h * 0.1) };
+    this.#animar(C, P, 420, () => { this.peekTimer = setTimeout(() => this.release(), 520); });
+    return true;
+  }
+  release() {
+    clearTimeout(this.peekTimer);
+    if (this.st !== 'fold_corner') return;
+    this.#animar(this.p, { x: this.w, y: this.h }, 260, () => { this.#layout(); this.#estado('read'); });
+  }
+
+  destroy() {
+    cancelAnimationFrame(this.raf);
+    clearTimeout(this.peekTimer);
+    this.sheets.forEach((s) => { s.remove(); limparFolha(s); s.inert = false; s.removeAttribute('aria-hidden'); });
+    this.root.remove();
   }
 }
 
@@ -180,7 +279,7 @@ export class BookController {
    * @param {HTMLElement} o.host onde o livro é montado
    * @param {HTMLElement[]} o.sheets folhas (nós do DOM, movidos entre motores)
    * @param {HTMLElement} o.measure contêiner invisível para medir se o conteúdo cabe
-   * @param {import('./motion-controller.mjs?v=202611211855').MotionController} o.motion
+   * @param {import('./motion-controller.mjs?v=202611211911').MotionController} o.motion
    * @param {(i:number)=>void} o.onChange folha atual mudou (após a virada)
    * @param {(info:object)=>void} [o.onMode] motor/estado mudou
    * @param {(state:string)=>void} [o.onState] estado da dobra mudou
@@ -190,7 +289,6 @@ export class BookController {
     this.origem = 'botao';
     this.engine = null;
     this.index = 0;
-    this.PageFlip = null;
     this.libFailed = false;
     this.overflow = false;
     this.size = { w: 0, h: 0 };
@@ -208,7 +306,6 @@ export class BookController {
 
   /** Carrega a biblioteca (se possível) e monta o livro na folha pedida. */
   async open(start = 0) {
-    try { this.PageFlip = await loadFlipLib(); } catch (e) { this.libFailed = true; console.info('[v2] modo simples:', e.message); }
     this.index = start;
     this.host.inert = false;
     const r = this.stage.getBoundingClientRect();
@@ -233,7 +330,7 @@ export class BookController {
   }
 
   #wantedMode() {
-    return (!this.PageFlip || this.motion.reduced || this.overflow) ? 'deck' : 'flip';
+    return (this.motion.reduced || this.overflow) ? 'deck' : 'flip';
   }
   #syncScroll() { if (this.engine?.type === 'deck') this.engine.el.classList.toggle('deck--scroll', this.overflow); }
   #remode() {
@@ -253,7 +350,7 @@ export class BookController {
     for (const s of this.sheets) {
       const c = s.cloneNode(true);
       c.style.cssText = `width:${w}px;height:${h}px;display:block`;
-      c.classList.remove('stf__item', 'is-current');
+      c.classList.remove('leaf', 'is-current');
       this.measure.append(c);
       const inner = c.firstElementChild;
       if (inner && (inner.scrollHeight > h + 1 || inner.scrollWidth > w + 1)) over = true;
@@ -270,10 +367,10 @@ export class BookController {
     const want = this.#wantedMode();
     if (want === 'flip') {
       try {
-        this.engine = new FlipEngine(this.PageFlip, this.host, this.sheets, start, this.size, hooks);
+        this.engine = new FoldEngine(this.host, this.sheets, start, this.size, { ...hooks, prepare: (s) => this.motion.prefetch(s) });
       } catch (e) {
         console.info('[v2] falha ao iniciar a dobra; modo simples:', e.message);
-        this.libFailed = true; this.PageFlip = null;
+        this.libFailed = true;
         this.sheets.forEach(limparFolha);
       }
     }

@@ -2,7 +2,7 @@
 // Funções puras sobre um `storage` injetado (localStorage no navegador, objeto falso nos testes).
 // Regra de ouro: nunca `clear()`; só remove chaves que pertencem a PREFIXOS_DEMO. A lista real (`jb-lista-noivos-v1`)
 // e rascunhos de convites reais (`jb-rsvp-v2:convite:*`) jamais entram na lista de remoção.
-import { inviteLinkV2, validateRow, adminTotals } from '../../domain.mjs?v=202611211855';
+import { inviteLinkV2, validateRow, adminTotals } from '../../domain.mjs?v=202611211911';
 
 export const PREFIXO_DEMO = 'jb-demo-v2:';
 export const PREFIXO_RASCUNHO_DEMO = 'jb-rsvp-v2:demo:';
