@@ -7,12 +7,12 @@
 <meta name="color-scheme" content="only light">
 <title>Jezriel &amp; Beatriz · 27.03.2027</title>
 <!-- Endereço antigo (willyshub/jezriel-e-beatriz). Desde 26/11/2026 o convite mora em https://jezrielebeatriz.github.io/.
-     Mantém ?convite= e #: links de teste antigos continuam funcionando. Publicado na raiz e em v2/ do repositório antigo. -->
-<script>location.replace('https://jezrielebeatriz.github.io/' + location.search + location.hash);</script>
+     Mantém ?convite= e #: links de teste antigos continuam funcionando. Publicado na raiz, em v2/ e em admin.html (leva ao painel novo) do repositório antigo. -->
+<script>var JB_ALVO = 'https://jezrielebeatriz.github.io/' + (/admin\.html$/.test(location.pathname) ? 'admin.html' : '') + location.search + location.hash; location.replace(JB_ALVO);</script>
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f2e9;color:#3b3a33;font:17px Georgia,serif;text-align:center;padding:24px;box-sizing:border-box}a{color:#7a5a2e}</style>
 </head>
 <body>
 <p>O convite de Jezriel &amp; Beatriz mudou de endereço.<br><a id="ir" href="https://jezrielebeatriz.github.io/">Abrir o convite</a></p>
-<script>document.getElementById('ir').href = 'https://jezrielebeatriz.github.io/' + location.search + location.hash;</script>
+<script>document.getElementById('ir').href = JB_ALVO;</script>
 </body>
 </html>

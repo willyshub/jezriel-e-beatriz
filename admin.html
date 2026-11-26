@@ -1,146 +1,18 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#f7f2e9"><meta name="color-scheme" content="only light"><meta name="supported-color-schemes" content="light"><meta name="format-detection" content="telephone=no"><title>Lista dos noivos · Gestão de convites</title><link rel="stylesheet" href="style.css?v=202611211911"><style>.names-box{margin:.6rem 0;padding:.5rem .7rem;border:1px solid #cfc3ad;border-radius:8px}.names-box summary{cursor:pointer;min-height:44px;display:flex;align-items:center}.names-box textarea,.names-field textarea{display:block;width:100%;margin:.4rem 0;font:inherit;font-size:16px;padding:.5rem;box-sizing:border-box}.names-field{display:block;margin:.6rem 0}.gate{margin:1rem 0;padding:1rem;border:1px solid #cfc3ad;border-radius:8px;background:#fffaf1}.gate h2{margin-top:0}.gate label{margin:.7rem 0}.gate .primary{width:100%}.backup-banner{margin:.8rem 0;padding:.8rem;border:2px solid #a55038;border-radius:8px;background:#fdeee6;font-size:13px;font-weight:600}.backup-banner button{margin-top:.5rem}.prot-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:.8rem 0}.prot-bar small{flex:1 1 100%;color:var(--muted);font-size:11px}.danger{border-color:#a55038!important;color:#87412e}.demo-banner{margin:.6rem 0;padding:.7rem;border:2px dashed #a0522d;border-radius:8px;font-weight:600}
-/* Painel de convidados — mobile first (320 px base). Tokens de style.css. */
-.gl{max-width:640px;padding:0 16px calc(110px + env(safe-area-inset-bottom))}
-.gl-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.gl svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
-.gl-top{display:flex;align-items:center;gap:4px;padding:14px 0 8px}
-.gl-top__title{flex:1;min-width:0}.gl-top h1{font:28px/1.1 Georgia,serif;letter-spacing:-.03em;margin:0}
-.gl-top p{margin:2px 0 0;font-size:12px;color:var(--muted)}
-.gl-icon{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;border-radius:50%;background:none;color:var(--ink);font-size:26px;line-height:1}
-.gl-icon:active{background:#34463c14}
-.gl-backup{display:flex;align-items:center;gap:10px;margin:6px 0;padding:8px 8px 8px 12px;border:1px solid var(--clay);border-radius:10px;background:#fdeee6;font-size:13px;color:#87412e}
-.gl-backup span{flex:1}.gl-backup button{flex:none;min-height:40px;padding:0 12px;border-radius:8px;background:var(--clay);color:var(--paper-light);font-size:13px}
-.gl-summary{margin:8px 0 4px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--paper-light)}
-.gl-summary__main{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
-.gl-summary__main strong{font:32px/1 Georgia,serif;color:var(--ink)}
-.gl-bar{height:6px;margin:10px 0 12px;border-radius:6px;background:#e7dfd0;overflow:hidden}.gl-bar i{display:block;height:100%;background:var(--sage);border-radius:6px}
-.gl-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.gl-kpis div{min-width:0}
-.gl-kpis strong{display:block;font:20px/1.2 Georgia,serif}.gl-kpis span{font-size:11px;color:var(--muted)}
-.gl-sticky{position:sticky;top:0;z-index:5;margin:0 -16px;padding:8px 16px 6px;background:var(--paper);box-shadow:0 6px 8px -8px #34463c40}
-.gl-search{position:relative;display:block}.gl-search svg{position:absolute;left:12px;top:13px;width:20px;height:20px;color:var(--muted)}
-.gl-search input{padding-left:40px!important;border-radius:24px!important;min-height:46px}
-.gl-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.gl-chips::-webkit-scrollbar{display:none}
-.gl-chips button{flex:none;min-height:38px;padding:0 13px;border:1px solid var(--line);border-radius:20px;background:var(--paper-light);color:var(--ink);font-size:13px;white-space:nowrap}
-.gl-chips button b{font-weight:600;margin-left:4px;color:var(--muted)}
-.gl-chips button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--paper-light)}.gl-chips button[aria-pressed=true] b{color:inherit}
-.gl-listhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 2px}
-.gl-listhead p{margin:0;font-size:12px;color:var(--muted)}
-.gl-sort{display:flex!important;align-items:center;gap:6px;font-size:12px!important;color:var(--muted)}
-.gl-sort select{width:auto!important;min-height:36px!important;padding:4px 8px!important;margin:0!important;font-size:14px!important;border-radius:8px!important}
-.gl-list{list-style:none;margin:0;padding:0}
-.gl-row{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:10px 4px;border-bottom:1px solid var(--line);background:none;color:var(--ink);text-align:left}
-.gl-row:active{background:#34463c0d}
-.gl-dot{flex:none;width:10px;height:10px;border-radius:50%;background:#c9bda6}
-.gl-dot--wait{background:var(--gold)}.gl-dot--ok{background:var(--sage)}.gl-dot--no{background:#b9a99a;box-shadow:inset 0 0 0 2px var(--paper)}.gl-dot--todo{background:none;border:2px solid var(--clay)}
-.gl-row__main{flex:1;min-width:0}.gl-row__main strong{display:block;font:17px/1.3 Georgia,serif;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gl-row__main small{display:block;font-size:12px;color:var(--muted)}
-.gl-row__end{flex:none;font-size:13px;color:var(--muted)}.gl-row__end--ok{color:#4e5b47;font-weight:600}
-.gl-empty{padding:36px 12px;text-align:center;color:var(--muted)}.gl-empty h3{font:22px Georgia,serif;color:var(--ink);margin-bottom:6px}
-.gl-fab{position:fixed;z-index:6;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));display:inline-flex;align-items:center;gap:8px;min-height:54px;padding:0 20px;border-radius:28px;background:var(--clay);color:var(--paper-light);font-size:15px;box-shadow:0 6px 18px #6e3a2a55}
-.gl-fab span{font-size:24px;line-height:1}.gl-fab:active{transform:translateY(1px)}
-.gl-toast{position:fixed;z-index:7;left:16px;right:16px;bottom:calc(82px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;padding:12px 14px;border-radius:10px;background:var(--ink);color:var(--paper-light)!important;font-size:14px!important;min-height:0!important;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .2s,transform .2s}
-.gl-toast.is-on{opacity:1;transform:none}
-.gl-bg{position:fixed;inset:0;z-index:20;background:#1d2620a0}
-.gl-sheet{position:fixed;z-index:21;left:0;right:0;bottom:0;max-height:92vh;max-height:92svh;overflow-y:auto;overscroll-behavior:contain;padding:6px 16px calc(20px + env(safe-area-inset-bottom));border-radius:18px 18px 0 0;background:var(--paper);box-shadow:0 -10px 30px #1d262040;font-family:system-ui,sans-serif;animation:gl-up .22s ease-out}
-.gl-sheet::before{content:'';display:block;width:40px;height:4px;margin:4px auto 6px;border-radius:4px;background:#cdbfa8}
-@keyframes gl-up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
-.gl-sheet__head{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}.gl-sheet__head>:first-child{flex:1;min-width:0}
-.gl-sheet h2{font:24px/1.2 Georgia,serif;letter-spacing:-.02em;margin:6px 0 2px;overflow-wrap:anywhere}
-.gl-sheet h3{font:12px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
-.gl-sheet label{display:block;font-size:13px;margin:10px 0}.gl-sheet label input,.gl-sheet label textarea{margin-top:6px}
-.gl-sheet textarea{display:block;width:100%;min-height:80px;padding:10px;border:1px solid #c8bca6;border-radius:8px;background:var(--paper-light);font:16px/1.5 system-ui,sans-serif;color:var(--ink)}
-.gl-sheet input:not([type=checkbox]):not([type=file]){border-radius:8px}
-.gl-hint{font-size:12px;color:var(--muted);margin:4px 0 8px;line-height:1.5}.gl-warn{color:#87412e}
-.gl-msg{font-size:13px!important;min-height:20px;color:var(--clay);margin:6px 0}
-.gl-field{margin:10px 0;font-size:13px}.gl-field>span{display:block;margin-bottom:6px}
-.gl-stepper{display:inline-flex;align-items:stretch;border:1px solid #c8bca6;border-radius:10px;overflow:hidden;background:var(--paper-light)}
-.gl-stepper button{width:52px;min-height:48px;background:none;font-size:24px;color:var(--ink)}.gl-stepper button:active{background:#34463c14}.gl-stepper button:disabled{opacity:.3}
-.gl-stepper input{width:64px!important;min-height:48px!important;border:0!important;border-inline:1px solid #e0d6c5!important;border-radius:0!important;text-align:center;font-size:18px!important;-moz-appearance:textfield}
-.gl-stepper input::-webkit-inner-spin-button,.gl-stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.gl-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.gl-seg button{min-height:52px;padding:6px 4px;border:1px solid var(--line);border-radius:10px;background:var(--paper-light);color:var(--ink);font-size:14px}
-.gl-seg button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--paper-light)}
-.gl-seg button[data-status=confirmado][aria-pressed=true]{background:#4e5b47;border-color:#4e5b47}
-.gl-seg button[data-status=recusado][aria-pressed=true]{background:#7b6f64;border-color:#7b6f64}
-.gl-count{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:14px}
-.gl-actions{display:grid;gap:8px;margin:8px 0}
-.gl-btn{display:flex!important;align-items:center;justify-content:center;gap:8px;min-height:48px;margin:0!important;padding:10px 14px;border:1px solid #c8bca6;border-radius:10px;background:var(--paper-light);color:var(--ink);font:15px system-ui,sans-serif;text-decoration:none;text-align:center;cursor:pointer}
-.gl-btn--primary{background:var(--clay);border-color:var(--clay);color:var(--paper-light)}
-.gl-btn--wa{background:#2f6b4f;border-color:#2f6b4f;color:#fff}
-.gl-btn--ghost{border-color:transparent;background:none;color:var(--muted);font-size:13px}
-.gl-btn--danger{border-color:#c98d7c;color:#87412e;background:none}
-.gl-btn--danger[data-armed]{background:#a55038;border-color:#a55038;color:#fff}
-.gl-check{display:flex!important;align-items:center;gap:10px;min-height:48px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper-light);font-size:14px!important}
-.gl-check input{width:22px;height:22px;accent-color:var(--sage);margin:0}
-.gl-ask{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-radius:10px;background:#eee6d8;font-size:13px}
-.gl-ask button{min-height:40px;padding:0 12px;border-radius:8px;background:var(--ink);color:var(--paper-light);font-size:13px}
-.gl-more{margin:12px 0;border-top:1px solid var(--line)}.gl-more summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-size:14px;color:var(--ink)}
-.gl-sheet label.gl-btn{font-size:15px}
-.gl-form .gl-btn--primary{width:100%;margin-top:14px!important}
-.gl .demo-banner{font-size:11px;line-height:1.4;padding:6px 10px;margin:10px 0 0;font-weight:600}
-.gl-intro{padding:28px 0 4px}.gl-intro h1{font:34px/1.1 Georgia,serif;letter-spacing:-.04em;margin:8px 0 10px}
-@media(prefers-reduced-motion:reduce){.gl-sheet{animation:none}.gl-toast{transition:none}}
-@media(min-width:700px){.gl-sheet{left:50%;right:auto;width:560px;transform:translateX(-50%);bottom:24px;border-radius:18px;animation:none}.gl-top h1{font-size:34px}}
-</style><script type="module" src="admin.mjs?v=202611211911"></script></head>
-<body class="admin-body"><main class="admin-shell gl">
-<div id="intro" class="gl-intro"><p class="eyebrow">JEZRIEL E BEATRIZ · 27.03.2027</p><h1>Lista de convidados</h1><p class="gl-hint">A lista fica só neste navegador, cifrada com uma senha que só você conhece. Sem a senha, só o backup recupera a lista.</p></div>
-<p id="demo-banner" class="demo-banner" hidden>MODO DEMONSTRAÇÃO · dados fictícios no namespace jb-demo-v2. A lista real deste navegador não é lida nem alterada aqui.</p><div id="storage-error" class="notice" hidden></div><section id="gate" class="gate" hidden aria-live="polite">
-<form id="form-criar" hidden><h2>Criar senha do painel</h2><p class="small-note" id="criar-info">Esta senha vale só neste navegador e não é enviada a lugar nenhum. <strong>Sem a senha, só o backup recupera a lista.</strong> Anote a senha em local seguro.</p><div id="migracao-box" hidden><p class="notice">Há uma lista salva neste navegador sem proteção. Ao criar a senha ela será cifrada e a cópia sem proteção será apagada. Baixe um backup antes, por precaução.</p><button type="button" class="outline-link" id="migracao-backup">Baixar backup da lista atual</button></div>
-<label>Nova senha (mínimo 8 caracteres)<input type="password" id="senha-nova" autocomplete="new-password" minlength="8" required></label><label>Repita a senha<input type="password" id="senha-conf" autocomplete="new-password" minlength="8" required></label><button class="primary" type="submit">Criar senha e abrir o painel</button><p role="status" id="criar-feedback"></p></form>
-<form id="form-entrar" hidden><h2>Painel bloqueado</h2><label>Senha<input type="password" id="senha-entrar" autocomplete="current-password" required></label><button class="primary" type="submit">Desbloquear</button><p role="status" id="entrar-feedback"></p>
-<details id="esqueci"><summary class="text-button">Esqueci a senha</summary><p class="notice">A lista cifrada deste navegador <strong>não pode ser recuperada sem a senha</strong>. O caminho é apagar apenas os dados do painel neste navegador, criar uma senha nova e restaurar o último backup JSON. Se não houver backup, os cadastros serão perdidos. O convite e os links já enviados não são afetados.</p><label>Para confirmar, digite APAGAR<input id="apagar-confirma" autocomplete="off"></label><button type="button" class="outline-link danger" id="apagar-painel">Apagar dados do painel e recomeçar</button><p role="status" id="apagar-feedback"></p></details></form>
-</section>
-<div id="painel" hidden>
-<header class="gl-top">
-  <div class="gl-top__title"><h1>Convidados</h1><p>27/03/2027 · 17h00 · Clube do Sindsep</p></div>
-  <button class="gl-icon" id="bloquear" type="button" aria-label="Bloquear painel" title="Bloquear painel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
-  <button class="gl-icon" id="abrir-menu" type="button" aria-label="Backup e mais opções" title="Backup e mais opções" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
-</header>
-<div id="backup-banner" class="gl-backup" role="alert" hidden><span id="backup-banner-texto"></span><button id="backup-banner-btn" type="button">Fazer backup</button></div>
-<section class="gl-summary" id="stats" aria-label="Resumo"></section>
-<div class="gl-sticky">
-  <label class="gl-search"><span class="gl-sr">Buscar convidado</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><input id="search" type="search" placeholder="Buscar nome" autocomplete="off" enterkeyhint="search"></label>
-  <div class="gl-chips" id="filters" role="group" aria-label="Filtrar convites"></div>
-</div>
-<div class="gl-listhead"><p id="list-info"></p><label class="gl-sort">Ordem <select id="sort"><option value="az">A–Z</option><option value="recentes">Recentes</option></select></label></div>
-<ul id="list" class="gl-list"></ul>
-<button id="abrir-novo" class="gl-fab" type="button" aria-haspopup="dialog"><span aria-hidden="true">+</span> Novo convite</button>
-<p id="action-feedback" class="gl-toast" role="status" aria-live="polite"></p>
-</div>
-
-<div id="sheet-bg" class="gl-bg" hidden></div>
-
-<section id="sheet-novo" class="gl-sheet" role="dialog" aria-modal="true" aria-labelledby="novo-titulo" hidden>
-  <header class="gl-sheet__head"><h2 id="novo-titulo">Novo convite</h2><button class="gl-icon" type="button" data-close aria-label="Fechar">×</button></header>
-  <form id="add-form" class="gl-form">
-    <label>Nome no convite<input name="name" id="guest-name" maxlength="100" required autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="Ex.: Família Souza ou Ana Lima"></label>
-    <div class="gl-field"><span id="cap-label">Vagas, contando o titular</span><div class="gl-stepper" data-stepper><button type="button" data-step="-1" aria-label="Menos uma vaga">−</button><input name="capacity" type="number" min="1" max="20" value="1" required inputmode="numeric" aria-labelledby="cap-label"><button type="button" data-step="1" aria-label="Mais uma vaga">+</button></div></div>
-    <details class="gl-more"><summary>Nomes dos acompanhantes (opcional)</summary><label>Um por linha. Vazio: o convidado preenche.<textarea name="acompanhantes" id="guest-companions" rows="3" maxlength="4000"></textarea></label></details>
-    <button class="gl-btn gl-btn--primary" type="submit">Salvar convite</button>
-    <p role="status" id="add-feedback" class="gl-msg"></p>
-    <p class="gl-hint">Depois de salvar, o formulário fica aberto para o próximo nome.</p>
-  </form>
-</section>
-
-<section id="sheet-convite" class="gl-sheet" role="dialog" aria-modal="true" aria-labelledby="convite-titulo" hidden>
-  <header class="gl-sheet__head"><div><h2 id="convite-titulo"></h2><p id="convite-sub" class="gl-hint"></p></div><button class="gl-icon" type="button" data-close aria-label="Fechar">×</button></header>
-  <div id="convite-body"></div>
-</section>
-
-<section id="sheet-menu" class="gl-sheet" role="dialog" aria-modal="true" aria-labelledby="menu-titulo" hidden>
-  <header class="gl-sheet__head"><h2 id="menu-titulo">Backup e opções</h2><button class="gl-icon" type="button" data-close aria-label="Fechar">×</button></header>
-  <p id="backup-status" class="gl-hint"></p>
-  <div class="gl-actions">
-    <button class="gl-btn gl-btn--primary" id="backup" type="button">Exportar backup (JSON)</button>
-    <label class="gl-btn" for="import">Restaurar backup</label><input class="file-input" type="file" id="import" accept="application/json,.json">
-    <button class="gl-btn" id="csv" type="button">Exportar planilha (CSV)</button>
-  </div>
-  <p id="backup-feedback" role="status" class="gl-msg"></p>
-  <div id="import-preview" class="notice" hidden><p id="import-description"></p><label id="demo-import-box" class="names-field" hidden><input type="checkbox" id="demo-import-ok"> Entendo que este backup é de outro ambiente (demonstração x lista real) e quero usá-lo mesmo assim.</label><button id="confirm-import" class="gl-btn" type="button">Substituir lista pelo backup conferido</button><button id="cancel-import" class="text-button" type="button">Cancelar</button></div>
-  <p class="gl-hint gl-warn">O arquivo de backup não é cifrado: guarde em local privado. Faça backup antes de trocar de aparelho ou limpar o navegador.</p>
-  <div id="prot-bar" class="gl-actions"><button class="gl-btn" id="abrir-troca" type="button">Trocar senha</button><small id="prot-info" class="gl-hint">Bloqueio automático após 15 minutos sem uso.</small></div>
-  <form id="form-troca" class="gate" hidden><h2>Trocar senha</h2><label>Senha atual<input type="password" id="troca-atual" autocomplete="current-password" required></label><label>Nova senha (mínimo 8 caracteres)<input type="password" id="troca-nova" autocomplete="new-password" minlength="8" required></label><label>Repita a nova senha<input type="password" id="troca-conf" autocomplete="new-password" minlength="8" required></label><button class="primary" type="submit">Trocar senha</button><button type="button" class="text-button" id="troca-cancelar">Cancelar</button><p role="status" id="troca-feedback"></p></form>
-  <details class="gl-more"><summary>Como funciona</summary><p class="gl-hint">A lista fica só neste navegador, cifrada com a sua senha (proteção local, não é servidor). Os convidados não atualizam o painel: a resposta chega pelo WhatsApp e vocês registram aqui. O link personaliza nome e vagas; editar o convite depois exige enviar o link novo.</p><p class="gl-hint">Planejamento estimado: cerca de 200 convites e 400 pessoas.</p></details>
-  <a class="gl-btn gl-btn--ghost" href="v2/index.html" target="_blank" rel="noopener">Ver o convite ↗</a>
-</section>
-</main></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="color-scheme" content="only light">
+<title>Jezriel &amp; Beatriz · 27.03.2027</title>
+<!-- Endereço antigo (willyshub/jezriel-e-beatriz). Desde 26/11/2026 o convite mora em https://jezrielebeatriz.github.io/.
+     Mantém ?convite= e #: links de teste antigos continuam funcionando. Publicado na raiz, em v2/ e em admin.html (leva ao painel novo) do repositório antigo. -->
+<script>var JB_ALVO = 'https://jezrielebeatriz.github.io/' + (/admin\.html$/.test(location.pathname) ? 'admin.html' : '') + location.search + location.hash; location.replace(JB_ALVO);</script>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f2e9;color:#3b3a33;font:17px Georgia,serif;text-align:center;padding:24px;box-sizing:border-box}a{color:#7a5a2e}</style>
+</head>
+<body>
+<p>O convite de Jezriel &amp; Beatriz mudou de endereço.<br><a id="ir" href="https://jezrielebeatriz.github.io/">Abrir o convite</a></p>
+<script>document.getElementById('ir').href = JB_ALVO;</script>
+</body>
+</html>
